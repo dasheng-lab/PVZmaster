@@ -7,7 +7,7 @@ import Car
 from enemy import EnemyManager
 C, R = 11, 20  # 11列， 20行
 CELL_SIZE = 40  # 格子尺寸
-
+#test
 FPS=60  # 游戏帧率
 WIN_WIDTH = CELL_SIZE * C  # 窗口宽度
 WIN_HEIGHT = CELL_SIZE * R  # 窗口高度
