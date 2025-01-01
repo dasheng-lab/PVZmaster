@@ -151,8 +151,8 @@ text1=Text(screen,30,630,950,50,font)
 NPCs.append(NPC(190,300,"images/player's wife/图层 1.png",1))
 NPCs.append(NPC(50,600,"images/坚果/坚果图层-1.png",3))
 NPCs_inhouse=[]
-NPCs_inhouse.append(NPC(300,300,"images/戴夫/图层-2.png",2))
-NPCs_inhouse.append(NPC(700,500,"images/窝瓜/图层-2.png",4))
+NPCs_inhouse.append(NPC(200,700,"images/戴夫/图层-2.png",2))
+NPCs_inhouse.append(NPC(-800,800,"images/窝瓜/图层-2.png",4))
 All_talk={
     "0":[],
     "1":["你好豌豆,我是一个可爱的向日葵，想和你一起守护家园",
@@ -225,3 +225,6 @@ def comb_str(string_list):
 def event_get(text):
     for event in pygame.event.get():
         text.get_text(event)
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN 
+        and event.key == pygame.K_ESCAPE):
+            sys.exit()

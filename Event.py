@@ -60,3 +60,4 @@ class Event_kind():
     RESTART=8
     EATEN=9
     TALK=10
+    WORDS=11

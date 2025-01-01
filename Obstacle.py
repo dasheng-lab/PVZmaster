@@ -16,7 +16,8 @@ class Obstacle(EntityLike,pygame.sprite.Sprite):
         self.image.set_alpha(0)
         self.rect=pygame.Rect(x,y,width,height)
     def draw(self,camera):
-        screen.blit(self.image, pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1],self.rect.width,self.rect.height))
+        screen.blit(self.image, pygame.Rect(self.rect.x-camera[0],
+        self.rect.y-camera[1],self.rect.width,self.rect.height))
     def collide(self,other,x=0,y=0):
         new_rect=other.rect.copy()
         new_rect.move_ip(x * 10, y * 10)

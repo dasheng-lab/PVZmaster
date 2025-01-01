@@ -23,9 +23,17 @@ nut_coldimage=pygame.transform.scale(nut_coldimage,(55,80))
 melon_coldimage=pygame.image.load("images/窝瓜冷却.png")
 melon_coldimage=pygame.transform.scale(melon_coldimage,(55,80))
 
+add_hp=Button(100,0,50,50,"images/加号.png")
+
 pygame.font.init()
 font = pygame.font.Font(f"word/pop.ttf", 30)
 font1 = pygame.font.Font(f"word/pop.ttf", 20)
+jindut0=pygame.image.load("images/进度条0.png")
+jindut0=pygame.transform.scale(jindut0,(150,25))
+jindut1=pygame.image.load("images/进度条1.png")
+jindut1=pygame.transform.scale(jindut1,(150,25))
+jindut2=pygame.image.load("images/进度条2.png")
+jindut2=pygame.transform.scale(jindut2,(150,25))
 
 sunflowerfunc_frame=[]
 for i in range(1,7):
@@ -37,26 +45,32 @@ sunflower_frame=[sunflowernor_frame,sunflowerfunc_frame]
 cold_dict={"1":[sunflower_coldimage,50],"3":[nut_coldimage,50],"4":[melon_coldimage,50]}
 place_dict={"1":280,"3":335,"4":390}
 
+
 class Level(Listener):
     def __init__(self):
         self.level=1
         self.count=0
         self.win_count=0
+        self.hp=0
     def level_start(self):
-        if self.level==1:
-            if self.count>=100 and self.win_count<=20:
-                self.count=0
-                emg.gen_new_zombie()
-                self.win_count+=1
-            else:
-                self.count+=1
-            if self.win_count>=20 and emg.zombie_list==[]:
+        if self.count>400 and self.win_count<=self.level*5+10:
+            self.count=0
+            emg.AIput(player.rect.x,player.rect.y)
+            self.win_count+=1
+        else:
+            self.count+=1
+        if self.win_count>=self.level*5+10:
+            for zombie in emg.zombie_list:
+                self.hp+=zombie.HP
+            if self.hp<=0:
                 moneybox.draw()
-            if moneybox.is_clicked():
-                self.win_count=0
-                self.level+=1
-                player_money.add_money(100)
-                self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))
+            else:
+                self.hp=0
+        if moneybox.is_clicked():
+            self.win_count=0
+            self.level+=1
+            player_money.add_money(100+20*self.level+int(0.1*card_box.sunshine))
+            self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))
 
 
 class Money():
@@ -79,13 +93,18 @@ lawn_avaible={}
 class Card():
     def __init__(self):
         self.plant=[False,True,False,True,True]#1向日葵，3坚果，4窝瓜
-        self.plant_cold=[0,0,0,0,0]
+        self.plant_cold=[0,200,0,0,0]
         self.image=self.dialog_surface = pygame.image.load("images/卡槽.png")
         self.rect=pygame.Rect(200,0,1000,200)
         self.clicked=0
-        self.sunshine=5000
+        self.sunshine=50
         self.active=0
+        self.suncount=0
     def draw(self):
+        self.suncount+=1
+        if self.suncount>=500:
+            self.suncount=0
+            self.sunshine+=25
         self.plant_cold[1]=min(self.plant_cold[1]+1,200)
         self.plant_cold[3]=min(self.plant_cold[3]+1,1200)
         self.plant_cold[4]=min(self.plant_cold[4]+1,2000)
@@ -93,22 +112,29 @@ class Card():
         screen.blit(self.image,self.rect)
         screen.blit(text1,(210,65))
         if self.plant[1]:
-            if self.plant_cold[1]>=200:
+            if self.plant_cold[1]>=200 and self.sunshine>=50:
                 screen.blit(sunflower_image,(280,0,55,80))
             else:
                 screen.blit(sunflower_coldimage,(280,0,55,80))
         if self.plant[3]:
-            if self.plant_cold[3]>=1200:
+            if self.plant_cold[3]>=1200 and self.sunshine>=50:
                 screen.blit(nut_image,(335,0,55,80))
             else:
                 screen.blit(nut_coldimage,(335,0,55,80))
         if self.plant[4]:
-            if self.plant_cold[4]>=2000:
+            if self.plant_cold[4]>=2000 and self.sunshine>=50:
                 screen.blit(melon_image,(390,0,55,80))
             else:
                 screen.blit(melon_coldimage,(390,0,55,80))
         if self.active!=0:
-            screen.blit(cold_dict[f"{self.active}"][0],(place_dict[f"{self.active}"],0,55,80))
+            screen.blit(cold_dict[f"{self.active}"][0],
+            (place_dict[f"{self.active}"],0,55,80))
+        if the_level.win_count<=the_level.level*2+10:
+            screen.blit(jindut0,(800,660))
+        if the_level.win_count>the_level.level*2+10 and the_level.win_count<=the_level.level*3+10:
+            screen.blit(jindut1,(800,660))
+        if the_level.win_count>the_level.level*3+10:
+            screen.blit(jindut2,(800,660))
     def is_clicked(self):
         mouse_pos=pygame.mouse.get_pos()
         mouse_buttons=pygame.mouse.get_pressed()
@@ -139,12 +165,21 @@ class Card():
                 self.clicked=0
             else:
                 self.clicked+=1
+            if add_hp.is_clicked():
+                if player.hp<player.besthp:
+                    if self.sunshine>=(player.besthp-player.hp)*5:
+                        self.sunshine-=(player.besthp-player.hp)*5
+                        player.hp=player.besthp
+                    else:
+                        player.hp+=self.sunshine//5
+                        self.sunshine=self.sunshine%5
     def grow(self):
         mouse_pos=pygame.mouse.get_pos()
         mouse_buttons=pygame.mouse.get_pressed()
         global plant_list
         for lawn in lawn_dict.keys():
-            if lawn_dict[lawn].rect.collidepoint(mouse_pos) and mouse_buttons[0]:
+            if (lawn_dict[lawn].rect.collidepoint(mouse_pos) 
+            and mouse_buttons[0]):
                 if self.active==1:
                     if lawn_avaible[lawn]:
                         self.sunshine-=50
@@ -168,7 +203,8 @@ class Card():
                         self.sunshine-=50
                         self.plant_cold[4]=0
                         self.active=0
-                        plant_list.append(Melon(lawn_dict[lawn].x,lawn_dict[lawn].y))
+                        plant_list.append(Melon(lawn_dict[lawn].x,
+                        lawn_dict[lawn].y))
                         lawn_avaible[lawn]=False
                     else:
                         self.active=0
@@ -190,7 +226,8 @@ class Rect1():
 
 for i in range(9):
     for j in range(5):
-        lawn_dict["lawn_rect"+str(i)+str(j)]=Rect1(162+i*84.5,184+j*98,86.5,98)
+        lawn_dict["lawn_rect"+str(i)+str(j)]=Rect1(162+i*84.5,
+                                                   184+j*98,86.5,98)
         lawn_avaible["lawn_rect"+str(i)+str(j)]=True
 
 
@@ -230,7 +267,6 @@ class Sunflower():
         if self.stacount>=30:
             self.stacount=0
             self.kind=0
-            emg.gen_new_zombie()
 
 
 

@@ -13,14 +13,11 @@ pygame.init()
 pygame.mixer.init()
 FPS=120
 # 设置窗口标题
-pygame.display.set_caption("植物大战僵尸射击版")
-
-# 加载背景图像
+pygame.display.set_caption("植物大战僵尸射击版")# 加载背景图像
 
 if __name__ == "__main__":
-    plant = Player()  # 生成角色实例
-    scene = SceneLike(plant)  # 生成场景实例
-    listeners = [plant, scene]  # 将角色和场景加入监听者列表
+    scene = SceneLike(player)  # 生成场景实例
+    listeners = [scene,player]  # 将角色和场景加入监听者列表
     mouse()
     
     while True:

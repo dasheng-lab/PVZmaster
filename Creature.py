@@ -5,6 +5,7 @@ import time
 import copy
 from Event import *
 from Obstacle import *
+from Openai import *
 
 pygame.font.init()
 font2 = pygame.font.Font(f"word/pop.ttf", 25)
@@ -30,7 +31,7 @@ for i in range(1,19):
 daifu_frame=[]
 for i in range(1,16):
     picture=pygame.image.load(f"images/戴夫/图层-{i}.png").convert_alpha()
-    picture=pygame.transform.scale(picture,(100,200))
+    picture=pygame.transform.scale(picture,(120,200))
     daifu_frame.append(picture)
 nut_frame=[]
 for i in range(1,9):
@@ -75,21 +76,24 @@ Help=False
 n=0
 ji=0
 
+status=[0,2200,-2200,1000,-1000]
 
 class Player(EntityLike,pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,x=200,y=200):
         self.image=pygame.image.load("images/shootermove/图层 1.png").convert_alpha()
         self.blood_image=pygame.image.load("images/血量.png").convert_alpha()
         self.blood_image=pygame.transform.scale(self.blood_image,(150,90))
         self.rect=self.image.get_rect()
-        self.rect.x=200
-        self.rect.y=200
+        self.rect.x=x
+        self.rect.y=y
         self.speed=10
         self.pic_diex=0
         self.hp=300
+        self.besthp=300
         self.blight=0
         self.place=0
-
+        self.beat=20
+        self.shoot_speed=50
     def listen(self, event: Event):  # 玩家类所响应的事件
         if event.code == pygame.KEYDOWN:  # 键盘按下事件
             self.keydown()
@@ -112,13 +116,13 @@ class Player(EntityLike,pygame.sprite.Sprite):
             stay0_1obstacle*=obstale.collide(self,0,1)
             stay1__0obstacle*=obstale.collide(self,-1,0)
             stay1_0obstacle*=obstale.collide(self,1,0)
-        if keys[pygame.K_UP] and stay0__1obstacle==1:
+        if keys[pygame.K_w] and stay0__1obstacle==1:
             self.rect.y-=self.speed
-        if keys[pygame.K_DOWN] and stay0_1obstacle==1:
+        if keys[pygame.K_s] and stay0_1obstacle==1:
             self.rect.y+=self.speed
-        if keys[pygame.K_LEFT] and stay1__0obstacle==1:
+        if keys[pygame.K_a] and stay1__0obstacle==1:
             self.rect.x-=self.speed
-        if keys[pygame.K_RIGHT] and stay1_0obstacle==1:
+        if keys[pygame.K_d] and stay1_0obstacle==1:
             self.rect.x+=self.speed
             self.post(Event(Event_kind.REQUEST_MOVE, {"POS": (self.rect.x, self.rect.y)}))
 
@@ -128,13 +132,17 @@ class Player(EntityLike,pygame.sprite.Sprite):
 
         if keys[pygame.K_SPACE]:
             global shooter_count 
-            shooter_count=min(shooter_count+1,30)
-            if shooter_count==10:
+            shooter_count=min(shooter_count+1,self.shoot_speed)
+            if shooter_count==self.shoot_speed:
                 if self.rect.x>-1000:
                     bulletlist_right.add(Bullet(self))
                 else:
                     bulletlist_left.add(Bullet(self))
                 shooter_count=0
+        
+        if keys[pygame.K_1]:
+            text0=f"beat={self.beat},shoot_speed={self.shoot_speed},besthp={self.besthp},speed={self.speed}"
+            self.post(Event(Event_kind.WORDS,{"text":text0}))
 
     def draw(self,camera,style):
         self.pic_diex+=0.2
@@ -169,7 +177,8 @@ class Player(EntityLike,pygame.sprite.Sprite):
             screen.blit(changecolor(story,1.5,1.5,1.5),pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(player_rect.width-65),player_rect.width,player_rect.height))
         else:
             self.blight=0
-            screen.blit(player_image,pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(player_rect.width-65),player_rect.width,player_rect.height))
+            screen.blit(player_image,pygame.Rect(self.rect.x-camera[0],
+                                                 self.rect.y-camera[1]-(player_rect.width-65),player_rect.width,player_rect.height))
         screen.blit(self.blood_image,(0,-20))
         text1=font2.render(f"{self.hp}",True,(0,0,0))
         screen.blit(text1,(50,16))
@@ -184,10 +193,6 @@ class Player(EntityLike,pygame.sprite.Sprite):
                 if self.hp<=0:
                     self.hp=300
                     self.post(Event(Event_kind.EATEN,{"objecct":player}))
-                #zombie.style=4
-                #self.style=5
-                #self.post(Event(Event_kind.GAMEOVER))
-                #break
             
 class Bullet(pygame.sprite.Sprite):
     def __init__(self,shooter):
@@ -216,7 +221,7 @@ class Bullet(pygame.sprite.Sprite):
             if (self.rect.colliderect(zombie.rect)
                 and zombie.style!=8
                 and zombie.style!=9):
-                zombie.HP-=20
+                zombie.HP-=player.beat
                 zombie.style=3
                 self.kill()
 
@@ -229,9 +234,24 @@ class ZombieManager(pygame.sprite.Sprite):
         self.move_speed=0.5
         self.dealing=0
         self.count=0
-    def gen_new_zombie(self):
-        gen=random.choice([425,315,230,125,25])
+    def gen_new_zombie(self,gen):
+        #gen=random.choice([425,315,230,125,25])
         self.zombie_list.append(Zombie(1000,gen))
+    def AIput(self,x,y):
+        staystr=AI_decision(x,y)
+        if "425" in staystr:
+            self.gen_new_zombie(425)
+        elif "315" in staystr:
+            self.gen_new_zombie(315)
+        elif "230" in staystr:
+            self.gen_new_zombie(230)
+        elif "125" in staystr:
+            self.gen_new_zombie(125)
+        elif "25" in staystr:
+            self.gen_new_zombie(25)
+        else:
+            gen1=random.choice([425,315,230,125,25])
+            self.gen_new_zombie(gen1)
         
     def move(self):
         for js in self.zombie_list:

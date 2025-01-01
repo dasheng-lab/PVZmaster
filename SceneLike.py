@@ -53,17 +53,25 @@ audio_player = AudioPlayer()
 audio_player.load_sound("begin","music/begin.mp3")
 audio_player.load_sound("begin2","music/begin2.mp3")
 audio_player.load_sound("begin3","music/begin3.mp3")
+front_door1=Button2(950,600,50,50,"images/箭头.png")
+behind_door1=Button2(-1000,600,50,50,"images/箭头 左.png")
+goods_shanghai=Button2(-100,1200,50,50,"images/伤害.png")
+goods_gongsu=Button2(-500,1200,50,50,"images/攻速.png")
+goods_shengming=Button2(-100,980,50,50,"images/最大生命.png")
+goods_sudu=Button2(-500,980,50,50,"images/速度.png")
 
 def mouse():
     cursor_image_path = "images/OIP-C (1).png"
     cursor_image = pygame.image.load(cursor_image_path).convert_alpha()
-    cursor_image = pygame.transform.scale(cursor_image, (cursor_image.get_width(), cursor_image.get_height()))
+    cursor_image = pygame.transform.scale(cursor_image,
+     (cursor_image.get_width(), cursor_image.get_height()))
     cursor_size = cursor_image.get_size()
     cursor_surface = pygame.Surface(cursor_size, pygame.SRCALPHA)
     cursor_surface.blit(cursor_image, (0, 0))
     hotspot_x = cursor_size[0] // 2
     hotspot_y = cursor_size[1] // 2
-    custom_cursor = pygame.cursors.Cursor((hotspot_x, hotspot_y), cursor_surface)
+    custom_cursor = pygame.cursors.Cursor((hotspot_x, hotspot_y),
+     cursor_surface)
     pygame.mouse.set_cursor(custom_cursor)
 
 
@@ -85,6 +93,10 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
         self.talk_staus=0
         self.object=0
         self.inout=0
+        self.judge=[0,0]
+        self.status=0
+        self.text=''
+        self.status1=0
     def listen(self, event: Event):  # 场景所监听的事件
         super().listen(event)
         if event.code == Event_kind.REQUEST_MOVE:  # 监听玩家的移动请求事件
@@ -92,13 +104,15 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
             if can_move:  # 如果可以移动的话就发送允许移动事件
                 self.post(Event(Event_kind.CAN_MOVE, event.body))
 
-        if event.code == Event_kind.DRAW:  # DRAW事件，用于描绘场景中的实体
+        if event.code == Event_kind.DRAW:  
+            # DRAW是每次游戏周期刷新时会被触发的事件
             if self.style==0:
                 screen.blit(self.image,self.rect)
                 button_1.draw()
                 audio_player.play_sound("begin")
                 if button_1.is_clicked():
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":1}))#选关界面
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":1}))#选关界面
             
             if self.style==1:
                 screen.blit(self.image,self.rect)
@@ -109,17 +123,22 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 button_6.draw()
                 button_7.draw()
                 if button_2.is_clicked():
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))#开始战斗
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":2,"x":-2600,"y":0}))#开始战斗
                     audio_player.switch_sound("begin2")
+
                 if (button_3.is_clicked() or button_4.is_clicked() or
                     button_5.is_clicked() or button_6.is_clicked()):
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":3,"x":280,"y":170}))#帮助
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":3,"x":280,"y":170}))#帮助
                 if button_7.is_clicked():
                     pygame.quit()
     
             if self.style==2:#室外
                 self.inout=0
-                screen.blit(self.image,(self.rect.x-self.carema[0],self.rect.y-self.carema[1]))
+                screen.blit(self.image,(self.rect.x-self.carema[0],
+                    self.rect.y-self.carema[1]))
+                self.player.draw(self.carema,self.style)  # 描绘玩家图像
                 for bullet in bulletlist_right:
                     bullet.draw(self.carema)
                 for bullet in bulletlist_left:
@@ -130,14 +149,11 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     zombie.draw(self.carema)
                 for obstacle in obstacle_list0:
                     obstacle.draw(self.carema)
-                self.player.draw(self.carema,self.style)  # 描绘玩家图像
                 front_door.draw(self.carema)
                 behind_door.draw(self.carema)
                 if front_door.is_clicked() :
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":7,"x":-1000,"y":0,"play_x":950,"play_y":600}))
-                    self.player.place=1
-                if behind_door.is_clicked():
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":7,"x":-1000,"y":0,"play_x":50,"play_y":600}))
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":7,"x":-1000,"y":0,"play_x":880,"play_y":600}))
                     self.player.place=1
                 player_money.draw()
                 button_11.draw()
@@ -146,12 +162,16 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     self.style=6
                     global plant_list
                     plant_list.clear()
-    
+                    card_box.sunshine=50
+                text1=font.render(f"{the_level.level}",True,(0,0,0))
+                screen.blit(text1,(920,15))
+
             if self.style==3:#敬请期待
                 screen.blit(self.image,self.rect)
                 button_8.draw()
                 if button_8.is_clicked():
-                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":1}))
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":1}))
 
             if self.style==4:#失败
                 go2=pygame.image.load("images/gameover2.png")
@@ -160,16 +180,19 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 restart.draw()
                 if restart.is_clicked():
                     self.ji=0
-                    self.post(Event(Event_kind.RESTART,{"background":2,"x":-2600,"y":0}))
+                    self.post(Event(Event_kind.RESTART,
+                    {"background":2,"x":-2600,"y":0}))
     
             if self.style==5:#对话界面
                 screen.blit(self.image,self.rect)
                 if buttontalk_1.is_clicked():
                     talk1.update()
                     if self.inout==0:
-                        self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))
+                        self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                            {"background":2,"x":-2600,"y":0}))
                     else:
-                        self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":7,"x":-1000,"y":0}))
+                        self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                            {"background":7,"x":-1000,"y":0}))
                 if self.talk_staus==0:
                     if buttontalk_2.is_clicked():
                         talk1.gen_text(self.object,self.talk_staus)#
@@ -200,10 +223,12 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 buttontalk_3.draw()
             
             if self.style==6:#战斗界面
-                screen.blit(self.image,(self.rect.x-self.carema[0],self.rect.y-self.carema[1]))
+                screen.blit(self.image,(self.rect.x-self.carema[0],
+                self.rect.y-self.carema[1]))
                 self.player.draw(self.carema,self.style)
                 card_box.draw()
                 player_money.draw()
+                add_hp.draw()
                 for bullet in bulletlist_right:
                     bullet.draw(self.carema)
                 for bullet in bulletlist_left:
@@ -218,7 +243,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
     
             if self.style==7:#房子内
                 self.inout=1
-                screen.blit(self.image,(self.rect.x-self.carema1[0],self.rect.y-self.carema1[1]))
+                screen.blit(self.image,(self.rect.x-self.carema1[0],
+                self.rect.y-self.carema1[1]))
                 for bullet in bulletlist_right:
                     bullet.draw(self.carema1)
                 for bullet in bulletlist_left:
@@ -229,9 +255,55 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     zombie.draw(self.carema1)
                 for obstacle in obstacle_list1:
                     obstacle.draw(self.carema1)
-                self.player.draw(self.carema1,self.style)  # 描绘玩家图像                    
+                self.player.draw(self.carema1,self.style)  # 描绘玩家图像
+                front_door1.draw(self.carema1)
+                player_money.draw()
+                goods_shanghai.draw(self.carema1)
+                if goods_shanghai.is_clicked():
+                    if player_money.money>=100:
+                        player.beat+=5
+                        player_money.reduce_money(100)
+                    else:
+                        self.status=100
+                goods_gongsu.draw(self.carema1)
+                if goods_gongsu.is_clicked():
+                    if player_money.money>=100:
+                        player.shoot_speed-=1
+                        player_money.reduce_money(100)
+                    else:
+                        self.status=100
+                goods_shengming.draw(self.carema1)
+                if goods_shengming.is_clicked():
+                    if player_money.money>=100:
+                        player.max_hp+=10
+                        player.hp+=10
+                        player_money.reduce_money(100)
+                    else:
+                        self.status=100
+                goods_sudu.draw(self.carema1)
+                if goods_sudu.is_clicked():
+                    if player_money.money>=100:
+                        player.speed+=1
+                        player_money.reduce_money(100)
+                    else:
+                        self.status=100
+                if front_door1.is_clicked():
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+                    {"background":2,"x":-2600,"y":0,"play_x":120,"play_y":350}))
+                    self.player.place=0
+                if self.status>0:
+                    text1=font.render(f"我还需要 {100-player_money.money} 块钱",
+                                      True,(127,255,127))
+                    screen.blit(text1,(58,600))
+                self.status-=1
+                if self.status1>0:
+                    textn=font.render(f"{self.text}",True,(127,255,127))
+                    screen.blit(textn,(200,0))
+                self.status1-=1
+ 
 
-        if event.code == Event_kind.STEP:  # STEP是每次游戏周期刷新时会被触发的事件
+        if event.code == Event_kind.STEP:  
+            # STEP是每次游戏周期刷新时会被触发的事件
             if self.style==2 or self.style==6 or self.style==7:
                 for bullet in bulletlist_right:
                     bullet.move()
@@ -248,7 +320,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                         npc.is_clicked() 
                 if self.style==7:#
                     for npc in NPCs_inhouse:#
-                        npc.is_clicked()#
+                        npc.is_clicked()
                 if self.style==6:
                     card_box.is_clicked()
                     card_box.grow()
@@ -261,7 +333,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     if zombie.is_end():
                         global end_zombie
                         end_zombie=zombie
-                        self.post(Event(Event_kind.GAMEOVER,{"background":4,"x":-2600,"y":0}))
+                        self.post(Event(Event_kind.GAMEOVER,
+                        {"background":4,"x":-2600,"y":0}))
                         break
 
         if event.code==Event_kind.CHANGE_BAKEGROUND:
@@ -276,6 +349,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 self.rect.y=event.body["y"]
                 player.rect.x=event.body["play_x"]
                 player.rect.y=event.body["play_y"]
+
         if event.code==Event_kind.GAMEOVER and not self.ji:
             self.ji=1
             pygame.time.delay(2000)
@@ -330,8 +404,10 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
             self.style=2
             player.rect.x=200
             player.rect.y=200
-            player.post(Event(Event_kind.REQUEST_MOVE, {"POS": (player.rect.x, player.rect.y)}))
-            self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))
+            player.post(Event(Event_kind.REQUEST_MOVE, 
+            {"POS": (player.rect.x, player.rect.y)}))
+            self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+            {"background":2,"x":-2600,"y":0}))
             emg.zombie_list=[]
             for bullet in bulletlist_right:
                 bulletlist_right.remove(bullet)
@@ -344,3 +420,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
         if event.code==Event_kind.TALK:
             self.style=5
             self.object=event.body["object"]
+        
+        if event.code==Event_kind.WORDS:
+            self.text=event.body["text"]
+            self.status1=100
