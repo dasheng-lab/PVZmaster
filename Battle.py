@@ -42,6 +42,22 @@ for i in range(1,7):
 
 sunflower_frame=[sunflowernor_frame,sunflowerfunc_frame]
 
+nuthurt1_frame=[]
+for i in range(1,9):
+    picture=pygame.image.load(f"images/坚果1/图层-{i}.png").convert_alpha()
+    nuthurt1_frame.append(picture)
+nuthurt2_frame=[]
+for i in range(1,9):
+    picture=pygame.image.load(f"images/坚果2/图层-{i}.png").convert_alpha()
+    nuthurt2_frame.append(picture)
+nut_set=[nut_frame,nuthurt1_frame,nuthurt2_frame]
+
+melonjump_frame=[]
+for i in range(1,5):
+    for j in range(1,3):
+        picture=pygame.image.load(f"images/窝瓜跳跃/图层-{i}.png").convert_alpha()
+        melonjump_frame.append(picture)
+
 cold_dict={"1":[sunflower_coldimage,50],"3":[nut_coldimage,50],"4":[melon_coldimage,50]}
 place_dict={"1":280,"3":335,"4":390}
 
@@ -61,7 +77,8 @@ class Level(Listener):
             self.count+=1
         if self.win_count>=self.level*5+10:
             for zombie in emg.zombie_list:
-                self.hp+=zombie.HP
+                if zombie.HP>=0:
+                    self.hp+=zombie.HP
             if self.hp<=0:
                 moneybox.draw()
             else:
@@ -69,8 +86,14 @@ class Level(Listener):
         if moneybox.is_clicked():
             self.win_count=0
             self.level+=1
+            global lawn_avaible
+            for lawn in lawn_avaible.keys():
+                lawn_avaible[lawn]=True
             player_money.add_money(100+20*self.level+int(0.1*card_box.sunshine))
-            self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background":2,"x":-2600,"y":0}))
+            self.post(Event(Event_kind.CHANGE_BAKEGROUND,
+            {"background":2,"x":-2600,"y":0}))
+        if self.level>=6:
+            self.post(Event(Event_kind.GAMEOVER))
 
 
 class Money():
@@ -131,7 +154,8 @@ class Card():
             (place_dict[f"{self.active}"],0,55,80))
         if the_level.win_count<=the_level.level*2+10:
             screen.blit(jindut0,(800,660))
-        if the_level.win_count>the_level.level*2+10 and the_level.win_count<=the_level.level*3+10:
+        if (the_level.win_count>the_level.level*2+10 
+            and the_level.win_count<=the_level.level*3+10):
             screen.blit(jindut1,(800,660))
         if the_level.win_count>the_level.level*3+10:
             screen.blit(jindut2,(800,660))
@@ -224,6 +248,7 @@ class Rect1():
         self.rect.x=self.x-camera[0]
         self.rect.y=self.y-camera[1]
 
+
 for i in range(9):
     for j in range(5):
         lawn_dict["lawn_rect"+str(i)+str(j)]=Rect1(162+i*84.5,
@@ -233,13 +258,14 @@ for i in range(9):
 
 class Sunflower():
     def __init__(self,x,y):
-        self.hp=300
+        self.hp=800
         self.x=x
         self.y=y
         self.pic_diex=0
         self.kind=0
         self.funccount=0
         self.stacount=0
+        self.blight=0
     def draw(self,camera):
         self.pic_diex+=0.2
         plant_blit=int(self.pic_diex%len(NPC_list[1]))
@@ -247,7 +273,19 @@ class Sunflower():
         self.rect=self.image.get_rect()
         self.rect.x=self.x-camera[0]+20
         self.rect.y=self.y-camera[1]+10
-        screen.blit(self.image,self.rect)
+        if self.blight==0:
+            screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+        elif self.blight<=3:
+            self.blight+=1
+            story=copy.copy(self.image)
+            screen.blit(changecolor(story,1.5,1.5,1.5),pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+        else:
+            self.blight=0
+            screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+        
         if self.kind==1:
             self.pic_diex+=0.2
             plant_blit=int(self.pic_diex%len(sunflowerfunc_frame))
@@ -256,7 +294,7 @@ class Sunflower():
             self.rect.x=self.x-camera[0]+20
             self.rect.y=self.y-camera[1]+10
             screen.blit(self.image,self.rect)
-    def func(self):
+    def func(self,camera):
         self.funccount+=1
         if self.funccount>=500:
             card_box.sunshine+=25
@@ -267,41 +305,145 @@ class Sunflower():
         if self.stacount>=30:
             self.stacount=0
             self.kind=0
-
+    def is_eaten(self,camera):
+        for zombie in emg.zombie_list:
+            if (pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(self.rect.width-65),
+                           self.rect.width,self.rect.height).colliderect(pygame.
+                            Rect(zombie.rect.x-camera[0]+10,
+                                 zombie.rect.y-camera[1]+20,
+                            zombie.rect.width/3,zombie.rect.height/3) )
+                            and zombie.style!=8 and zombie.style!=9 and zombie.HP>70):
+                zombie.style=10
+                self.hp-=8
+                self.blight=1
+        if self.hp<=0:
+            plant_list.remove(self)
+            for lawn in lawn_dict.keys():
+                if lawn_dict[lawn].x==self.x and lawn_dict[lawn].y==self.y:
+                    lawn_avaible[lawn]=True
 
 
 class Nut():
     def __init__(self,x,y):
-        self.hp=4000
+        self.hp=10000
         self.x=x
         self.y=y
         self.pic_diex=0
         self.kind=3
+        self.blight=0
+        self.status=0
     def draw(self,camera):
         self.pic_diex+=0.2
-        plant_blit=int(self.pic_diex%len(NPC_list[self.kind]))
-        self.image=NPC_list[self.kind][plant_blit]
+        plant_blit=int(self.pic_diex%len(nut_set[self.status]))
+        self.image=nut_set[self.status][plant_blit]
         self.rect=self.image.get_rect()
         self.rect.x=self.x-camera[0]+20
         self.rect.y=self.y-camera[1]+10
-        screen.blit(self.image,self.rect)
-    def func(self):
-        pass
-
+        if self.blight==0:
+            screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+        elif self.blight<=3:
+            self.blight+=1
+            story=copy.copy(self.image)
+            screen.blit(changecolor(story,1.5,1.5,1.5),pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+        else:
+            self.blight=0
+            screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+            self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+    def func(self,camera):
+        if self.hp<=6000 and self.hp>=3000:
+            self.status=1
+        if self.hp<3000:
+            self.status=2
+    def is_eaten(self,camera):
+        for zombie in emg.zombie_list:
+            if (pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(self.rect.width-65),
+                           self.rect.width,self.rect.height).colliderect(pygame.
+                            Rect(zombie.rect.x-camera[0]+10,
+                                 zombie.rect.y-camera[1]+20,
+                            zombie.rect.width/3,zombie.rect.height/3) )
+                            and zombie.style!=8 and zombie.style!=9 and zombie.HP>70):
+                zombie.style=10
+                self.hp-=8
+                self.blight=1
+        if self.hp<=0:
+            plant_list.remove(self)
+            for lawn in lawn_dict.keys():
+                if lawn_dict[lawn].x==self.x and lawn_dict[lawn].y==self.y:
+                    lawn_avaible[lawn]=True
 class Melon():
     def __init__(self,x,y):
-        self.hp=300
+        self.hp=800
         self.x=x
         self.y=y
         self.pic_diex=0
+        self.pic_diex1=0
         self.kind=4
+        self.blight=0
+        self.countfunc=0
+        self.funx=0
     def draw(self,camera):
-        self.pic_diex+=0.2
-        plant_blit=int(self.pic_diex%len(NPC_list[self.kind]))
-        self.image=NPC_list[self.kind][plant_blit]
-        self.rect=self.image.get_rect()
-        self.rect.x=self.x-camera[0]+20
-        self.rect.y=self.y-camera[1]+10
-        screen.blit(self.image,self.rect)
-    def func(self):
-        pass
+        if self.funx==1:
+            if self.countfunc<=40:
+                self.pic_diex1+=0.2
+                plant_blit1=int(self.pic_diex1%len(melonjump_frame))
+                self.image=melonjump_frame[plant_blit1]
+                screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+                self.rect.y-camera[1]-(self.rect.width-65)+self.pic_diex1*12,self.rect.width,self.rect.height))
+                self.countfunc+=1
+            else:
+                self.countfunc=0
+                plant_list.remove(self)
+                for lawn in lawn_dict.keys():
+                    if lawn_dict[lawn].x==self.x and lawn_dict[lawn].y==self.y:
+                        lawn_avaible[lawn]=True
+        else:
+            self.pic_diex+=0.2
+            plant_blit=int(self.pic_diex%len(NPC_list[self.kind]))
+            self.image=NPC_list[self.kind][plant_blit]
+            self.rect=self.image.get_rect()
+            self.rect.x=self.x-camera[0]+20
+            self.rect.y=self.y-camera[1]+10
+            if self.blight==0:
+                screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+                self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+            elif self.blight<=3:
+                self.blight+=1
+                story=copy.copy(self.image)
+                screen.blit(changecolor(story,1.5,1.5,1.5),pygame.Rect(self.rect.x-camera[0],
+                self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+            else:
+                self.blight=0
+                screen.blit(self.image,pygame.Rect(self.rect.x-camera[0],
+                self.rect.y-camera[1]-(self.rect.width-65),self.rect.width,self.rect.height))
+    def func(self,camera):
+        if self.funx==0:
+            for zombie in emg.zombie_list:
+                if (pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(self.rect.width-65),
+                            self.rect.width,self.rect.height).colliderect(pygame.
+                                Rect(zombie.rect.x-camera[0]-20,
+                                    zombie.rect.y-camera[1]+20,
+                                zombie.rect.width*2,zombie.rect.height/3) )
+                                and zombie.style!=8 and zombie.style!=9 and zombie.HP>70):
+                    self.funx=1
+                    zombie.style=9
+                    self.rect.x=zombie.rect.x
+                    self.rect.y=zombie.rect.y
+    
+    def is_eaten(self,camera):
+        for zombie in emg.zombie_list:
+            if (pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1]-(self.rect.width-65),
+                           self.rect.width,self.rect.height).colliderect(pygame.
+                            Rect(zombie.rect.x-camera[0]+10,
+                                 zombie.rect.y-camera[1]+20,
+                            zombie.rect.width/3,zombie.rect.height/3) )
+                            and zombie.style!=8 and zombie.style!=9 and zombie.HP>70):
+                zombie.style=10
+                self.hp-=8
+                self.blight=1
+        if self.hp<=0:
+            plant_list.remove(self)
+            for lawn in lawn_dict.keys():
+                if lawn_dict[lawn].x==self.x and lawn_dict[lawn].y==self.y:
+                    lawn_avaible[lawn]=True

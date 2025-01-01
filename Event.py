@@ -61,3 +61,4 @@ class Event_kind():
     EATEN=9
     TALK=10
     WORDS=11
+    BOOM=12

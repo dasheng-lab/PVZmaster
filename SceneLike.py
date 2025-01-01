@@ -7,7 +7,7 @@ from Event import *
 from Creature import *
 from Talk import *
 from Battle import *
-from music import *
+from Music import *
 
 picture_list=[]
 start_image=pygame.image.load("images/start.png")
@@ -163,8 +163,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     global plant_list
                     plant_list.clear()
                     card_box.sunshine=50
-                text1=font.render(f"{the_level.level}",True,(0,0,0))
-                screen.blit(text1,(920,15))
+                text3=font.render(f"{the_level.level}",True,(0,0,0))
+                screen.blit(text3,(920,15))
 
             if self.style==3:#敬请期待
                 screen.blit(self.image,self.rect)
@@ -261,22 +261,22 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 goods_shanghai.draw(self.carema1)
                 if goods_shanghai.is_clicked():
                     if player_money.money>=100:
-                        player.beat+=5
+                        player.beat+=10
                         player_money.reduce_money(100)
                     else:
                         self.status=100
                 goods_gongsu.draw(self.carema1)
                 if goods_gongsu.is_clicked():
                     if player_money.money>=100:
-                        player.shoot_speed-=1
+                        player.shoot_speed-=5
                         player_money.reduce_money(100)
                     else:
                         self.status=100
                 goods_shengming.draw(self.carema1)
                 if goods_shengming.is_clicked():
                     if player_money.money>=100:
-                        player.max_hp+=10
-                        player.hp+=10
+                        player.max_hp+=50
+                        player.hp+=50
                         player_money.reduce_money(100)
                     else:
                         self.status=100
@@ -292,9 +292,9 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     {"background":2,"x":-2600,"y":0,"play_x":120,"play_y":350}))
                     self.player.place=0
                 if self.status>0:
-                    text1=font.render(f"我还需要 {100-player_money.money} 块钱",
+                    text2=font.render(f"我还需要 {100-player_money.money} 块钱",
                                       True,(127,255,127))
-                    screen.blit(text1,(58,600))
+                    screen.blit(text2,(58,600))
                 self.status-=1
                 if self.status1>0:
                     textn=font.render(f"{self.text}",True,(127,255,127))
@@ -312,7 +312,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     bullet.move()
                     bullet.crash_zombie()
                 for plant in plant_list:
-                    plant.func()
+                    plant.func(self.carema)
+                    plant.is_eaten(self.carema)
                 for lawn in lawn_dict.keys():
                     lawn_dict[lawn].update(self.carema)
                 if self.style==2:
@@ -424,3 +425,4 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
         if event.code==Event_kind.WORDS:
             self.text=event.body["text"]
             self.status1=100
+        

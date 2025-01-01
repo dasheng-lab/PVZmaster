@@ -76,8 +76,6 @@ Help=False
 n=0
 ji=0
 
-status=[0,2200,-2200,1000,-1000]
-
 class Player(EntityLike,pygame.sprite.Sprite):
     def __init__(self,x=200,y=200):
         self.image=pygame.image.load("images/shootermove/图层 1.png").convert_alpha()
@@ -86,10 +84,10 @@ class Player(EntityLike,pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.x=x
         self.rect.y=y
-        self.speed=10
+        self.speed=5
         self.pic_diex=0
-        self.hp=300
-        self.besthp=300
+        self.hp=800
+        self.besthp=800
         self.blight=0
         self.place=0
         self.beat=20
@@ -178,7 +176,7 @@ class Player(EntityLike,pygame.sprite.Sprite):
         else:
             self.blight=0
             screen.blit(player_image,pygame.Rect(self.rect.x-camera[0],
-                                                 self.rect.y-camera[1]-(player_rect.width-65),player_rect.width,player_rect.height))
+            self.rect.y-camera[1]-(player_rect.width-65),player_rect.width,player_rect.height))
         screen.blit(self.blood_image,(0,-20))
         text1=font2.render(f"{self.hp}",True,(0,0,0))
         screen.blit(text1,(50,16))
@@ -205,7 +203,8 @@ class Bullet(pygame.sprite.Sprite):
         self.speed=5
         self.pic_diex=0
     def draw(self,camera):
-        screen.blit(self.image, pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1],self.rect.width,self.rect.height)) 
+        screen.blit(self.image, pygame.Rect(self.rect.x-camera[0],
+        self.rect.y-camera[1],self.rect.width,self.rect.height)) 
     def move(self):
         #7 在屏幕范围内，实现往右移动
         if -1000<self.rect.x < 1000:
@@ -276,7 +275,8 @@ class Zombie(pygame.sprite.Sprite):
         self.fallindex=0
         self.eatindex=0
         self.image=pygame.image.load("images/commonjs/cjs1.png").convert_alpha()
-        self.image2=pygame.image.load("images/cjsdiewalk/cjsdiewalk图层-1.png").convert_alpha()
+        self.image2=pygame.image.load("images/cjsdiewalk/cjsdiewalk图层-1.png"
+        ).convert_alpha()
         self.rect=self.image.get_rect()
         self.rect2=self.image2.get_rect()
         self.rect.x=self.x
@@ -289,7 +289,8 @@ class Zombie(pygame.sprite.Sprite):
             cjsblit=int(self.cjsindex%len(frame))
             self.rect.x=self.x
             self.rect.y=screen_height-(self.y+frame[cjsblit].get_height())
-            screen.blit(frame[cjsblit],(self.rect.x-camera[0],self.rect.y-camera[1],self.rect.width,self.rect.height))
+            screen.blit(frame[cjsblit],(self.rect.x-camera[0],self.rect.y-camera[1],
+            self.rect.width,self.rect.height))
         elif self.style==3 : #被子弹击中
             if self.HP>70:
                 self.cjsindex+=0.1
@@ -299,7 +300,8 @@ class Zombie(pygame.sprite.Sprite):
                 story=copy.copy(frame[cjsblit])
                 if self.n<3:
                     self.n+=1
-                    screen.blit(changecolor(story,1.6,1.6,1.6),(self.rect.x-camera[0],self.rect.y-camera[1],self.rect.width,self.rect.height))
+                    screen.blit(changecolor(story,1.6,1.6,1.6),(self.rect.x-camera[0],
+                    self.rect.y-camera[1],self.rect.width,self.rect.height))
                 if self.n==3:
                     self.n=0
                     self.style=0
@@ -311,7 +313,8 @@ class Zombie(pygame.sprite.Sprite):
                 story=copy.copy(cjsdiewalk_frame[cjsblit])
                 if self.n<3:
                     self.n+=1
-                    screen.blit(changecolor(story,1.6,1.6,1.6),(self.rect2.x-camera[0],self.rect2.y-camera[1],self.rect.width,self.rect.height))
+                    screen.blit(changecolor(story,1.6,1.6,1.6),(self.rect2.x-camera[0],
+                    self.rect2.y-camera[1],self.rect.width,self.rect.height))
                 if self.n==3:
                     self.n=0
                     self.style=7
@@ -343,13 +346,17 @@ class Zombie(pygame.sprite.Sprite):
             cjsblit=int(self.cjsindex%len(cjsdiewalk_frame))
             self.rect2.x=self.x
             self.rect2.y=screen_height-(self.y+cjsdiewalk_frame[cjsblit].get_height())
-            screen.blit(cjsdiewalk_frame[cjsblit],(self.rect2.x-camera[0],self.rect2.y-camera[1],self.rect.width,self.rect.height))
+            screen.blit(cjsdiewalk_frame[cjsblit],(self.rect2.x-camera[0],
+            self.rect2.y-camera[1],self.rect.width,self.rect.height))
         elif self.style==8 : #尸体倒下
             self.fallindex+=0.1
             fallblit=int(self.fallindex)
             if fallblit<len(cjsfall_frame):
                 rect=cjsfall_frame[fallblit].get_rect()
-                screen.blit(cjsfall_frame[fallblit],(self.rect2.x-camera[0]-rect.width+self.rect.width-10,self.rect2.y-camera[1]-rect.height+self.rect.height-22,self.rect.width,self.rect.height))
+                screen.blit(cjsfall_frame[fallblit],
+            (self.rect2.x-camera[0]-rect.width+self.rect.width-10,
+             self.rect2.y-camera[1]-rect.height+self.rect.height-22,
+             self.rect.width,self.rect.height))
             else:
                 self.style=9 
         elif self.style==9 : #尸体倒下后消失
@@ -360,8 +367,11 @@ class Zombie(pygame.sprite.Sprite):
             #self.rect.x=self.x
             #self.rect.y=screen_height-(self.y+cjseat_frame[eatblit].get_height())
             screen.blit(cjseat_frame[eatblit],(self.rect.x-camera[0],self.rect.y-camera[1]))
-            if not pygame.Rect(player.rect.x-camera[0],player.rect.y-camera[1]-(player.rect.width-65),
-                           player.rect.width,player.rect.height).colliderect(pygame.Rect(self.rect.x-camera[0],self.rect.y-camera[1],
+            if not pygame.Rect(player.rect.x-camera[0]
+                            ,player.rect.y-camera[1]-(player.rect.width-65),
+                           player.rect.width,player.rect.height).colliderect(pygame.
+                            Rect(self.rect.x-camera[0],
+                            self.rect.y-camera[1],
                             self.rect.width,self.rect.height)):
                 self.style=0
         if self.HP<=70 :
@@ -372,7 +382,8 @@ class Zombie(pygame.sprite.Sprite):
             self.headindex+=0.1
             headblit=int(self.headindex)
             if headblit<len(head_frame):
-                head=Head(head_frame[headblit],temp[0]+f(self.headindex),temp[1]+g(self.headindex,0.5))
+                head=Head(head_frame[headblit],
+                temp[0]+f(self.headindex),temp[1]+g(self.headindex,0.5))
                 head.draw(camera)
     def move(self):
         self.x-=self.move_speed
@@ -400,8 +411,10 @@ class Button():
     def __init__(self,x,y,width,height,image):
         self.x=x
         self.y=y
-        self.image=pygame.transform.scale(pygame.image.load(image).convert_alpha(),(width,height))
-        self.image2=changecolor(pygame.transform.scale(pygame.image.load(image).convert_alpha(),(width,height)), 1.2,1.2,1.2)
+        self.image=pygame.transform.scale(pygame.image.load(image).
+            convert_alpha(),(width,height))
+        self.image2=changecolor(pygame.transform.scale(pygame.image.load(image).
+            convert_alpha(),(width,height)), 1.2,1.2,1.2)
         self.rect=pygame.Rect(x,y,width,height)
         self.clicked=20
     def draw(self):
@@ -413,7 +426,8 @@ class Button():
     def is_clicked(self):
         mouse_pos=pygame.mouse.get_pos()
         mouse_buttons=pygame.mouse.get_pressed()
-        if self.clicked>=20 and self.rect.collidepoint(mouse_pos) and mouse_buttons[0]:
+        if (self.clicked>=20 and self.rect.collidepoint(mouse_pos) 
+            and mouse_buttons[0]):
             self.clicked=0
             return self.rect.collidepoint(mouse_pos) and mouse_buttons[0] 
         else:
@@ -424,8 +438,10 @@ class Button2():
     def __init__(self,x,y,width,height,image):
         self.x=x
         self.y=y
-        self.image=pygame.transform.scale(pygame.image.load(image).convert_alpha(),(width,height))
-        self.image2=changecolor(pygame.transform.scale(pygame.image.load(image).convert_alpha(),(width,height)), 1.2,1.2,1.2)
+        self.image=pygame.transform.scale(pygame.image.load(image).
+        convert_alpha(),(width,height))
+        self.image2=changecolor(pygame.transform.scale(pygame.image.
+        load(image).convert_alpha(),(width,height)), 1.2,1.2,1.2)
         self.rect=pygame.Rect(x,y,width,height)
         self.clicked=20
     def draw(self,camera):
@@ -439,7 +455,8 @@ class Button2():
     def is_clicked(self):
         mouse_pos=pygame.mouse.get_pos()
         mouse_buttons=pygame.mouse.get_pressed()
-        if self.clicked>=20 and self.rect.collidepoint(mouse_pos) and mouse_buttons[0]:
+        if (self.clicked>=20 and self.rect.collidepoint(mouse_pos) 
+            and mouse_buttons[0]):
             self.clicked=0
             return self.rect.collidepoint(mouse_pos) and mouse_buttons[0] 
         else:
@@ -448,7 +465,8 @@ class Button2():
 
 
 pygame.font.init()
-FONTS = [pygame.font.Font(pygame.font.get_default_font(), font_size) for font_size in [48, 36, 24]]
+FONTS = [pygame.font.Font(pygame.font.get_default_font(),
+ font_size) for font_size in [48, 36, 24]]
 
 NPCs=[]
 
@@ -481,4 +499,5 @@ class Head(EntityLike,pygame.sprite.Sprite):
         self.x=x
         self.y=y
     def draw(self,camera):
-        screen.blit(self.image, pygame.Rect(self.x-camera[0],self.y-camera[1],50,50))
+        screen.blit(self.image, pygame.
+        Rect(self.x-camera[0],self.y-camera[1],50,50))

@@ -15,7 +15,7 @@ def AI_talk(str):
         ],
         model="llama3.2"
     )
-    chat_completion0=re.split(r'[.?!]',chat_completion.choices[0].message.content)
+    chat_completion0=re.split(r'[,.?!]',chat_completion.choices[0].message.content)
     return chat_completion0
 def AI_decision(str1,str2):
     chat_completion=client.chat.completions.create(
