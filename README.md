@@ -1,2 +1,0 @@
-# testgame
- only for test
