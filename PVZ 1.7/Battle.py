@@ -6,6 +6,10 @@ import copy
 from Creature import *
 from Event import *
 from plants import *
+
+
+font = pygame.font.Font(f"word/pop.ttf", 30)
+font1 = pygame.font.Font(f"word/pop.ttf", 20)
 moneyimage = pygame.image.load("images/钱数.png")
 moneyimage = pygame.transform.scale(moneyimage, (150, 50))
 moneybox = Button(700, 350, 75, 75, "images/钱袋.png")
@@ -15,15 +19,22 @@ nut_image = pygame.image.load("images/坚果卡.png")
 nut_image = pygame.transform.scale(nut_image, (55, 80))
 melon_image = pygame.image.load("images/窝瓜卡.png")
 melon_image = pygame.transform.scale(melon_image, (55, 80))
-
+sunflower2_image = pygame.image.load("images/向日葵卡2.png")
+sunflower2_image = pygame.transform.scale(sunflower2_image, (55, 80))
+nut2_image = pygame.image.load("images/坚果卡2.png")
+nut2_image = pygame.transform.scale(nut2_image, (55, 80))
+melon2_image = pygame.image.load("images/窝瓜卡2.png")
+melon2_image = pygame.transform.scale(melon2_image, (55, 80))
 sunflower_coldimage = pygame.image.load("images/向日葵冷却.png")
 sunflower_coldimage = pygame.transform.scale(sunflower_coldimage, (55, 80))
 nut_coldimage = pygame.image.load("images/坚果冷却.png")
 nut_coldimage = pygame.transform.scale(nut_coldimage, (55, 80))
 melon_coldimage = pygame.image.load("images/窝瓜冷却.png")
 melon_coldimage = pygame.transform.scale(melon_coldimage, (55, 80))
-
+shovelbank=pygame.image.load("images/铲槽.png")
+shovelbank=pygame.transform.scale(shovelbank,(100,100))
 add_hp = Button(130, 0, 50, 50, "images/加号.png")
+transistor=0
 
 pygame.font.init()
 font = pygame.font.Font(f"word/pop.ttf", 30)
@@ -34,7 +45,6 @@ jindut1 = pygame.image.load("images/进度条1.png")
 jindut1 = pygame.transform.scale(jindut1, (150, 25))
 jindut2 = pygame.image.load("images/进度条2.png")
 jindut2 = pygame.transform.scale(jindut2, (150, 25))
-
 sunflowerfunc_frame = []
 for i in range(1, 7):
     picture = pygame.image.load(f"images/向日葵头亮/图层-{i}.png").convert_alpha()
@@ -66,66 +76,6 @@ cold_dict = {
 place_dict = {"1": 280, "3": 335, "4": 390}
 
 
-class Level(Listener):
-    def __init__(self):
-        self.level = 1
-        self.count = 0
-        self.win_count = 0
-        self.hp = 0
-
-    def level_start(self):
-        if self.count > 400 and self.win_count <= self.level * 5 + 10:
-            self.count = 0
-            emg.AIput(player.rect.x, player.rect.y)
-            self.win_count += 1
-        else:
-            self.count += 1
-        if self.win_count >= self.level * 5 + 10:
-            for zombie in emg.zombie_list:
-                if zombie.HP >= 0:
-                    self.hp += zombie.HP
-            if self.hp <= 0:
-                moneybox.draw()
-            else:
-                self.hp = 0
-        if moneybox.is_clicked():
-            self.win_count = 0
-            self.level += 1
-            global lawn_avaible
-            for lawn in lawn_avaible.keys():
-                lawn_avaible[lawn] = True
-            player_money.add_money(100 + 20 * self.level + int(0.1 * card_box.sunshine))
-            self.post(
-                Event(
-                    Event_kind.CHANGE_BAKEGROUND, {"background": 2, "x": -2600, "y": 0}
-                )
-            )
-        if self.level >= 6:
-            self.post(Event(Event_kind.GAMEOVER))
-
-
-class Money:
-    def __init__(self):
-        self.money = 0
-        self.image = moneyimage
-
-    def add_money(self, num):
-        self.money += num
-
-    def reduce_money(self, num):
-        self.money -= num
-
-    def draw(self):
-        screen.blit(self.image, (0, 650))
-        text1 = font.render(f"{self.money}", True, (127, 255, 127))
-        screen.blit(text1, (58, 665))
-
-
-the_level = Level()
-player_money = Money()
-lawn_avaible = {}
-
-
 class Card:
     def __init__(self):
         self.plant = [False, True, False, True, True]  # 1向日葵，3坚果，4窝瓜
@@ -138,12 +88,13 @@ class Card:
         self.suncount = 0
 
     def draw(self):
+        screen.blit(shovelbank, (645, 0))
         self.suncount += 1
         if self.suncount >= 500:
             self.suncount = 0
             self.sunshine += 25
         self.plant_cold[1] = min(self.plant_cold[1] + 1, 200)
-        self.plant_cold[3] = min(self.plant_cold[3] + 1, 1200)
+        self.plant_cold[3] = min(self.plant_cold[3] + 1, 1500)
         self.plant_cold[4] = min(self.plant_cold[4] + 1, 2000)
         text1 = font1.render(f"{self.sunshine}", True, (0, 0, 0))
         screen.blit(self.image, self.rect)
@@ -152,17 +103,17 @@ class Card:
             if self.plant_cold[1] >= 200 and self.sunshine >= 50:
                 screen.blit(sunflower_image, (280, 0, 55, 80))
             else:
-                screen.blit(sunflower_coldimage, (280, 0, 55, 80))
+                screen.blit(sunflower2_image, (280, 0, 55, 80))
         if self.plant[3]:
-            if self.plant_cold[3] >= 1200 and self.sunshine >= 50:
+            if self.plant_cold[3] >= 1500 and self.sunshine >= 50:
                 screen.blit(nut_image, (335, 0, 55, 80))
             else:
-                screen.blit(nut_coldimage, (335, 0, 55, 80))
+                screen.blit(nut2_image, (335, 0, 55, 80))
         if self.plant[4]:
-            if self.plant_cold[4] >= 2000 and self.sunshine >= 50:
+            if self.plant_cold[4] >= 2000 and self.sunshine >= 50: #change
                 screen.blit(melon_image, (390, 0, 55, 80))
             else:
-                screen.blit(melon_coldimage, (390, 0, 55, 80))
+                screen.blit(melon2_image, (390, 0, 55, 80))
         if self.active != 0:
             screen.blit(
                 cold_dict[f"{self.active}"][0],
@@ -198,7 +149,7 @@ class Card:
                 and pygame.Rect(335, 0, 55, 80).collidepoint(mouse_pos)
                 and mouse_buttons[0]
                 and self.sunshine >= 50
-                and self.plant_cold[3] >= 1200
+                and self.plant_cold[3] >= 1500
             ):
                 self.active = 3
                 self.clicked = 0
@@ -208,7 +159,7 @@ class Card:
                 and pygame.Rect(390, 0, 55, 80).collidepoint(mouse_pos)
                 and mouse_buttons[0]
                 and self.sunshine >= 50
-                and self.plant_cold[4] >= 2000
+                and self.plant_cold[4] >= 2000 #change
             ):
                 self.active = 4
                 self.clicked = 0
@@ -216,12 +167,12 @@ class Card:
                 self.clicked += 1
             if add_hp.is_clicked():
                 if player.hp < player.besthp:
-                    if self.sunshine >= (player.besthp - player.hp) * 5:
-                        self.sunshine -= (player.besthp - player.hp) * 5
+                    if self.sunshine >= (player.besthp - player.hp) :
+                        self.sunshine -= (player.besthp - player.hp) 
                         player.hp = player.besthp
                     else:
-                        player.hp += self.sunshine // 5
-                        self.sunshine = self.sunshine % 5
+                        player.hp += self.sunshine 
+                        self.sunshine = 0
 
     def grow(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -262,33 +213,54 @@ class Card:
 
 card_box = Card()
 
-plant_list = []
+class Shovel:
+    def __init__(self):
+        self.image = pygame.image.load("images/铲子.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (90, 90))
+        self.image2=changecolor(self.image,1.2,1.2,1.2)
+        self.rect = self.image.get_rect()
+        self.rect.x = 645
+        self.rect.y = 0
+        self.active = False
+        self.clicked=20
+
+    def draw(self):
+        global plant_list
+        mouse_pos = pygame.mouse.get_pos()
+        if not self.active :
+            self.rect.x=645
+            self.rect.y=0
+            if self.rect.collidepoint(mouse_pos):
+                screen.blit(self.image2, (self.rect.x, self.rect.y))
+            else:
+                screen.blit(self.image, (self.rect.x, self.rect.y))
+        if self.active :
+            screen.blit(self.image, pygame.Rect(mouse_pos[0]-45, mouse_pos[1]-45, 80, 80))
+            self.rect.x=mouse_pos[0]-45
+            self.rect.y=mouse_pos[1]-45
+            for plantx in plant_list:
+                if plantx.rect.collidepoint(mouse_pos):
+                    plantx.blight=1
+
+    def is_clicked(self):
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_buttons = pygame.mouse.get_pressed()
+        if (
+            self.clicked >= 20
+            and self.rect.collidepoint(mouse_pos)
+            and mouse_buttons[0]
+        ):
+            self.clicked = 0
+            return self.rect.collidepoint(mouse_pos) and mouse_buttons[0]
+        else:
+            self.clicked += 1
+            return False
+
 lawn_dict = {}
-
-
-class Rect1:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.rect = pygame.Rect(x, y, width, height)
-        self.width = width
-        self.height = height
-
-    def update(self, camera):
-        self.rect.x = self.x - camera[0]
-        self.rect.y = self.y - camera[1]
-
-
-for i in range(9):
-    for j in range(5):
-        lawn_dict["lawn_rect" + str(i) + str(j)] = Rect1(
-            162 + i * 84.5, 184 + j * 98, 86.5, 98
-        )
-        lawn_avaible["lawn_rect" + str(i) + str(j)] = True
-
+shovel=Shovel()
 class Sunflower:
     def __init__(self, x, y):
-        self.hp = 800
+        self.hp = 300
         self.x = x
         self.y = y
         self.pic_diex = 0
@@ -348,16 +320,17 @@ class Sunflower:
             screen.blit(self.image, self.rect)
 
     def func(self, camera):
-        self.funccount += 1
-        if self.funccount >= 500:
-            card_box.sunshine += 25
-            self.funccount = 0
-            self.kind = 1
-        if self.kind == 1:
-            self.stacount += 1
-        if self.stacount >= 30:
-            self.stacount = 0
-            self.kind = 0
+        if not the_level.triumph:
+            self.funccount += 1
+            if self.funccount >= 500:
+                card_box.sunshine += 25
+                self.funccount = 0
+                self.kind = 1
+            if self.kind == 1:
+                self.stacount += 1
+            if self.stacount >= 30:
+                self.stacount = 0
+                self.kind = 0
 
     def is_eaten(self, camera):
         for zombie in emg.zombie_list:
@@ -487,6 +460,8 @@ class Nut:
                 and zombie.style!= 9
             ):
                zombie.collide=True
+            else:
+                zombie.collide=False
             if (
                 pygame.Rect(
                     self.rect.x,
@@ -528,30 +503,69 @@ class Melon:
         self.kind = 4
         self.blight = 0
         self.countfunc = 0
+        self.countfunc1F5=0
+        self.countfunc2=0
         self.funx = 0
-
+        self.emglist=[]
     def draw(self, camera):
         if self.funx == 1:
-            if self.countfunc <= 39:
-                self.pic_diex1 += 0.05
-                plant_blit1 = int(self.pic_diex1 % len(melonjump_frame))
-                self.image = melonjump_frame[plant_blit1]
+            if self.countfunc2<10:
+                self.pic_diex += 0.4
+                plant_blit = int(self.pic_diex % len(NPC_list[self.kind]))
+                self.image = NPC_list[self.kind][plant_blit]
+                self.rect = self.image.get_rect()
+                self.rect.x = self.x - camera[0] + 20+dx/10*self.countfunc2
+                self.rect.y = self.y - camera[1] + 10-dy/15*self.countfunc2
                 screen.blit(
                     self.image,
                     pygame.Rect(
                         self.rect.x,
-                        self.rect.y - (self.rect.width - 65) + self.pic_diex1 * 12,
+                        self.rect.y - (self.rect.width - 65),
                         self.rect.width,
                         self.rect.height,
                     ),
                 )
-                self.countfunc += 1
+                self.countfunc2+=1
             else:
-                self.countfunc = 0
-                plant_list.remove(self)
-                for lawn in lawn_dict.keys():
-                    if lawn_dict[lawn].x == self.x and lawn_dict[lawn].y == self.y:
-                        lawn_avaible[lawn] = True
+                if self.countfunc1F5<20:
+                    self.pic_diex += 0.5
+                    self.image = NPC_list[self.kind][0]
+                    self.rect = self.image.get_rect()
+                    self.rect.x = self.x - camera[0] + 20+dx
+                    self.rect.y = self.y - camera[1] + 10-100
+                    screen.blit(
+                        self.image,
+                        pygame.Rect(
+                            self.rect.x,
+                            self.rect.y - (self.rect.width - 65),
+                            self.rect.width,
+                            self.rect.height,
+                        ),
+                    )
+                    self.countfunc1F5+=1
+                else:
+                    if self.countfunc <= 9:
+                        self.pic_diex1 += 0.5
+                        plant_blit1 = int(self.pic_diex1 % len(melonjump_frame))
+                        self.image = melonjump_frame[plant_blit1]
+                        screen.blit(
+                            self.image,
+                            pygame.Rect(
+                                self.rect.x+10,
+                                self.rect.y - (self.rect.width - 65) + self.pic_diex1*25,
+                                self.rect.width,
+                                self.rect.height,
+                            ),
+                        )
+                        self.countfunc += 1
+                    else:
+                        self.countfunc = 0
+                        for zombiee in self.emglist:
+                            zombiee.style=9
+                        plant_list.remove(self)
+                        for lawn in lawn_dict.keys():
+                            if lawn_dict[lawn].x == self.x and lawn_dict[lawn].y == self.y:
+                                lawn_avaible[lawn] = True
         else:
             self.pic_diex += 0.2
             plant_blit = int(self.pic_diex % len(NPC_list[self.kind]))
@@ -604,9 +618,9 @@ class Melon:
                         self.rect.height,
                     ).colliderect(
                         pygame.Rect(
-                            zombie.rect.x - camera[0] - 20,
+                            zombie.rect.x - camera[0] - 40,
                             zombie.rect.y - camera[1] + 20,
-                            zombie.rect.width * 2,
+                            zombie.rect.width * 3,
                             zombie.rect.height / 3,
                         )
                     )
@@ -615,9 +629,11 @@ class Melon:
                     and zombie.HP > 70
                 ):
                     self.funx = 1
-                    zombie.style = 9
-                    self.rect.x = zombie.rect.x-camera[0]
-                    self.rect.y = zombie.rect.y-camera[1]
+                    self.emglist.append(zombie)
+                    global dx,dy,zmobiee
+                    zmobiee=zombie
+                    dx=zmobiee.rect.x - self.rect.x-camera[0]
+                    dy=150
 
     def is_eaten(self, camera):
         for zombie in emg.zombie_list:
@@ -637,6 +653,7 @@ class Melon:
                 )
                 and zombie.style!= 8
                 and zombie.style!= 9
+                and self.funx == 0
             ):
                zombie.collide=True
             if (
@@ -667,3 +684,109 @@ class Melon:
             for lawn in lawn_dict.keys():
                 if lawn_dict[lawn].x == self.x and lawn_dict[lawn].y == self.y:
                     lawn_avaible[lawn] = True
+class Level(Listener):
+    def __init__(self):
+        self.level = 1
+        self.count = 0
+        self.win_count = 0
+        self.hp = 0
+        self.triumph = False
+
+    def level_start(self):
+        if self.count > 500 and self.win_count <= self.level * 5 + 10:
+            self.count = 0
+            emg.AIput(player.rect.x, player.rect.y)
+            self.win_count += 1
+        else:
+            self.count += 1
+        if self.win_count >= self.level * 5 + 10:
+            for zombie in emg.zombie_list:
+                if zombie.HP >= 0:
+                    self.hp += zombie.HP
+            if self.hp <= 0:
+                moneybox.draw()
+                self.triumph=True
+            else:
+                self.hp = 0
+        if moneybox.is_clicked():
+            self.win_count = 0
+            self.level += 1
+            self.triumph=False
+            global lawn_avaible
+            for lawn in lawn_avaible.keys():
+                lawn_avaible[lawn] = True
+            player_money.add_money(100 + 20 * self.level + int(0.1 * card_box.sunshine))
+            self.post(
+                Event(
+                    Event_kind.CHANGE_BAKEGROUND, {"background": 2, "x": -2600, "y": 0}
+                )
+            )
+        if self.level >= 6:
+            self.post(Event(Event_kind.GAMEOVER))
+class Money:
+    def __init__(self):
+        self.money = 0
+        self.image = moneyimage
+
+    def add_money(self, num):
+        self.money += num
+
+    def reduce_money(self, num):
+        self.money -= num
+
+    def draw(self):
+        screen.blit(self.image, (0, 650))
+        text1 = font.render(f"{self.money}", True, (127, 255, 127))
+        screen.blit(text1, (58, 665))
+the_level = Level()
+player_money = Money()
+lawn_avaible = {}
+card_box = Card()
+add_hp = Button(130, 0, 50, 50, "images/加号.png")
+
+
+class Money:
+    def __init__(self):
+        self.money = 0
+        self.image = moneyimage
+
+    def add_money(self, num):
+        self.money += num
+
+    def reduce_money(self, num):
+        self.money -= num
+
+    def draw(self):
+        screen.blit(self.image, (0, 650))
+        text1 = font.render(f"{self.money}", True, (127, 255, 127))
+        screen.blit(text1, (58, 665))
+
+class yruiet:
+    pass
+
+
+
+
+
+
+
+class Rect1:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.rect = pygame.Rect(x, y, width, height)
+        self.width = width
+        self.height = height
+
+    def update(self, camera):
+        self.rect.x = self.x - camera[0]
+        self.rect.y = self.y - camera[1]
+
+
+for i in range(9):
+    for j in range(5):
+        lawn_dict["lawn_rect" + str(i) + str(j)] = Rect1(
+            162 + i * 84.5, 184 + j * 98, 86.5, 98
+        )
+        lawn_avaible["lawn_rect" + str(i) + str(j)] = True
+

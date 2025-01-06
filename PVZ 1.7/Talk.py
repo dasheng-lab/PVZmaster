@@ -249,12 +249,15 @@ def comb_str(string_list):
         if not current_string:
             current_string = s
         else:
-            if punctuation.search(s[-1]):
-                current_string += s
-                result.append(current_string)
-                current_string = ""
+            if s=='' or s==' ' or s=='\n':
+                continue
             else:
-                current_string += "" + s
+                if punctuation.search(s[-1]):
+                    current_string += s
+                    result.append(current_string)
+                    current_string = ""
+                else:
+                    current_string += "" + s
     if current_string:
         result.append(current_string)
     return result

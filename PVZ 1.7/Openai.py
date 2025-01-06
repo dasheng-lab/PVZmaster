@@ -26,7 +26,7 @@ def AI_decision(str1, str2):
                 + f"{str1}"
                 + ","
                 + f"{str2}"
-                + ") you can chose the y-coordinate of your zombie to attack the enemy or enter the house,which one will you chose?(from[425,315,230,125,25])",
+                + ") you can chose the y-coordinate of your zombie to attack the enemy or enter the house,which one will you chose?(from[425,315,230,125,25],please only reply a number)",
             },
         ],
         model="llama3.2",

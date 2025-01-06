@@ -1,5 +1,5 @@
 from GameManager import *
+gameManager=Gamemanager()
 if __name__ == "__main__":
-    gameManager=Gamemanager()
     while True:
-        gameManager.setup()
+        gameManager.setup()  #PVZ,启动!

@@ -61,7 +61,6 @@ def g(y, a=1):
     else:
         return g(9)
 
-
 class Event_kind:
     DRAW = 1
     STEP = 2
