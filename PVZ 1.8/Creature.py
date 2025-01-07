@@ -6,6 +6,8 @@ import copy
 from Event import *
 from Obstacle import *
 from Openai import *
+from ppause import *
+from moneymanager import *
 
 pygame.font.init()
 font2 = pygame.font.Font(f"word/pop.ttf", 25)
@@ -68,8 +70,6 @@ money_frame=[]
 for i in range(1,10):
     picture=pygame.image.load(f"images/钱/钱币{i}.png").convert_alpha()
     money_frame.append(picture)
-# pygame.font.init()
-# font = [pygame.font.Font(pygame.font.get_default_font(),font_size) for font_size in [48, 36, 24]]
 
 NPC_list = []
 NPC_list.append(daifu_frame)
@@ -77,15 +77,6 @@ NPC_list.append(sunflowernor_frame)
 NPC_list.append(daifu_frame)
 NPC_list.append(nut_frame)
 NPC_list.append(melon_frame)
-
-over = False
-enter = False
-fight = False
-insert = False
-Help = False
-n = 0
-ji = 0
-
 
 class Player(EntityLike, pygame.sprite.Sprite):
     def __init__(self, x=200, y=200):
@@ -120,14 +111,8 @@ class Player(EntityLike, pygame.sprite.Sprite):
 
     def keydown(self):  # 键盘按下事件的响应
         keys = pygame.key.get_pressed()
-        if (keys[pygame.K_2] or button_9.is_clicked()) and self.reasontime%2==0 :
-            self.reasontime+=1
-            self.pause=not self.pause
-        if self.reasontime%2!=0 and not (keys[pygame.K_2] or button_9.is_clicked()):
-            self.reasontime+=1
-        if button_13.is_clicked():
-            self.pause = not self.pause
-        print('player:',self.pause)
+        pausemanager.detect()
+        self.pause=pausemanager.pause
         if not self.pause:
             stay0__1obstacle = obstacl_class[self.place][0].collide(self, 0, -1)
             stay0_1obstacle = obstacl_class[self.place][0].collide(self, 0, 1)
@@ -149,7 +134,6 @@ class Player(EntityLike, pygame.sprite.Sprite):
             if keys[pygame.K_SPACE]:
                 global shooter_count
                 shooter_count = min(shooter_count + 1, self.shoot_speed)
-                print(shooter_count)
                 if shooter_count == self.shoot_speed:
                     if self.rect.x > -1000:
                         bulletlist_right.add(Bullet(self))
@@ -637,8 +621,84 @@ class Zombie(pygame.sprite.Sprite):
                     50,50
                 )
                 head.draw(camera)
-            if self.money==99:
-                pass  #diamond
+            if self.money>=98:  #diamond
+                self.moneyindex+=0.2
+                moneyblit=int(self.moneyindex%5)+4
+                if self.moneyindex<15:
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        temp[0]-f(self.moneyindex),
+                        temp[1]+g(self.moneyindex,0.5),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<20:
+                    x=temp[0]-f(15)+camera[0]
+                    y=temp[1]+g(15,0.5)+camera[1]
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        x-h(self.moneyindex-15,temp[0]-30),
+                        y+h(self.moneyindex-15,630-temp[1]),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<25:
+                    player_money.add_money(1000)
+                    self.moneyindex=114514
+                else:
+                    pass  
+            elif self.money<98 and self.money>=90:  #goldcoin
+                self.moneyindex+=0.2
+                moneyblit=int(self.moneyindex%2)+2
+                if self.moneyindex<15:
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        temp[0]-f(self.moneyindex),
+                        temp[1]+g(self.moneyindex,0.5),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<20:
+                    x=temp[0]-f(15)+camera[0]
+                    y=temp[1]+g(15,0.5)+camera[1]
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        x-h(self.moneyindex-15,temp[0]-30),
+                        y+h(self.moneyindex-15,610-temp[1]),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<25:
+                    player_money.add_money(50)
+                    self.moneyindex=114514
+                else:
+                    pass  
+            elif self.money<89 and self.money>=70:  #coin
+                self.moneyindex+=0.2
+                moneyblit=int(self.moneyindex%2)
+                if self.moneyindex<15:
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        temp[0]-f(self.moneyindex),
+                        temp[1]+g(self.moneyindex,0.5),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<20:
+                    x=temp[0]-f(15)+camera[0]
+                    y=temp[1]+g(15,0.5)+camera[1]
+                    diamond=Fallthing(
+                        money_frame[moneyblit],
+                        x-h(self.moneyindex-15,temp[0]-30),
+                        y+h(self.moneyindex-15,610-temp[1]),
+                        40,40
+                    )
+                    diamond.draw(camera)
+                elif self.moneyindex<25:
+                    player_money.add_money(10)
+                    self.moneyindex=114514
+                else:
+                    pass  
     def move(self):
         self.x -= self.move_speed
 
@@ -657,48 +717,8 @@ class Zombie(pygame.sprite.Sprite):
         
 
 
-class Button:
-    def __init__(self, x, y, width, height, image):
-        self.x = x
-        self.y = y
-        self.image = pygame.transform.scale(
-            pygame.image.load(image).convert_alpha(), (width, height)
-        )
-        self.image2 = changecolor(
-            pygame.transform.scale(
-                pygame.image.load(image).convert_alpha(), (width, height)
-            ),
-            1.2,
-            1.2,
-            1.2,
-        )
-        self.rect = pygame.Rect(x, y, width, height)
-        self.clicked = 20
 
-    def draw(self):
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            screen.blit(self.image2, (self.x, self.y))
-        else:
-            screen.blit(self.image, (self.x, self.y))
 
-    def is_clicked(self):
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_buttons = pygame.mouse.get_pressed()
-        if (
-            self.clicked >= 20
-            and self.rect.collidepoint(mouse_pos)
-            and mouse_buttons[0]
-        ):
-            self.clicked = 0
-            return self.rect.collidepoint(mouse_pos) and mouse_buttons[0]
-        else:
-            self.clicked += 1
-            return False
-
-button_9 = Button(300, 525, 390, 100, "images/button9.png")
-button_13=Button(355,400,280,55,"images/button13.png")
-button_14=Button(355,450,280,50,"images/button14.png")
 class Button2:
     def __init__(self, x, y, width, height, image):
         self.x = x

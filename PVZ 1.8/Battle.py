@@ -5,13 +5,8 @@ import time
 import copy
 from Creature import *
 from Event import *
-from plants import *
+from moneymanager import *
 
-
-font = pygame.font.Font(f"word/pop.ttf", 30)
-font1 = pygame.font.Font(f"word/pop.ttf", 20)
-moneyimage = pygame.image.load("images/钱数.png")
-moneyimage = pygame.transform.scale(moneyimage, (150, 50))
 moneybox = Button(700, 350, 75, 75, "images/钱袋.png")
 sunflower_image = pygame.image.load("images/向日葵卡.png")
 sunflower_image = pygame.transform.scale(sunflower_image, (55, 80))
@@ -86,6 +81,8 @@ class Card:
         self.sunshine = 50
         self.active = 0
         self.suncount = 0
+        self.gen_plant = False
+        self.reasontime=0
 
     def draw(self):
         screen.blit(shovelbank, (645, 0))
@@ -110,7 +107,7 @@ class Card:
             else:
                 screen.blit(nut2_image, (335, 0, 55, 80))
         if self.plant[4]:
-            if self.plant_cold[4] >= 2000 and self.sunshine >= 50: #change
+            if self.plant_cold[4] >= 2000 and self.sunshine >= 50: 
                 screen.blit(melon_image, (390, 0, 55, 80))
             else:
                 screen.blit(melon2_image, (390, 0, 55, 80))
@@ -173,42 +170,85 @@ class Card:
                     else:
                         player.hp += self.sunshine 
                         self.sunshine = 0
+        if self.active != 0:
+            if (
+                self.plant[1]
+                and self.clicked >= 20
+                and pygame.Rect(280, 0, 55, 80).collidepoint(mouse_pos)
+                and mouse_buttons[0]
+                and self.sunshine >= 50
+                and self.plant_cold[1] >= 200
+            ):
+                self.active = 0
+                self.clicked = 0
+            if (
+                self.plant[3]
+                and self.clicked >= 20
+                and pygame.Rect(335, 0, 55, 80).collidepoint(mouse_pos)
+                and mouse_buttons[0]
+                and self.sunshine >= 50
+                and self.plant_cold[3] >= 1500
+            ):
+                self.active = 0
+                self.clicked = 0
+            if (
+                self.plant[4]
+                and self.clicked >= 20
+                and pygame.Rect(390, 0, 55, 80).collidepoint(mouse_pos)
+                and mouse_buttons[0]
+                and self.sunshine >= 50
+                and self.plant_cold[4] >= 2000 #change
+            ):
+                self.active = 0
+                self.clicked = 0
+            else:
+                self.clicked += 1
 
     def grow(self):
         mouse_pos = pygame.mouse.get_pos()
         mouse_buttons = pygame.mouse.get_pressed()
+        self.gen_plant=False
         global plant_list
-        for lawn in lawn_dict.keys():
-            if lawn_dict[lawn].rect.collidepoint(mouse_pos) and mouse_buttons[0]:
-                if self.active == 1:
-                    if lawn_avaible[lawn]:
-                        self.sunshine -= 50
-                        self.plant_cold[1] = 0
-                        self.active = 0
-                        plant_list.append(
-                            Sunflower(lawn_dict[lawn].x, lawn_dict[lawn].y)
-                        )
-                        lawn_avaible[lawn] = False
-                    else:
-                        self.active = 0
-                if self.active == 3:
-                    if lawn_avaible[lawn]:
-                        self.sunshine -= 50
-                        self.plant_cold[3] = 0
-                        self.active = 0
-                        plant_list.append(Nut(lawn_dict[lawn].x, lawn_dict[lawn].y))
-                        lawn_avaible[lawn] = False
-                    else:
-                        self.active = 0
-                if self.active == 4:
-                    if lawn_avaible[lawn]:
-                        self.sunshine -= 50
-                        self.plant_cold[4] = 0
-                        self.active = 0
-                        plant_list.append(Melon(lawn_dict[lawn].x, lawn_dict[lawn].y))
-                        lawn_avaible[lawn] = False
-                    else:
-                        self.active = 0
+        if mouse_buttons[0] and self.reasontime%10==0:
+            self.reasontime+=1
+            for lawn in lawn_dict.keys():
+                if lawn_dict[lawn].rect.collidepoint(mouse_pos) :
+                    if self.active == 1:
+                        if lawn_avaible[lawn]:
+                            self.sunshine -= 50
+                            self.plant_cold[1] = 0
+                            self.active = 0
+                            plant_list.append(
+                                Sunflower(lawn_dict[lawn].x, lawn_dict[lawn].y)
+                            )
+                            self.gen_plant=True
+                            lawn_avaible[lawn] = False
+                        else:
+                            self.active = 0
+                    if self.active == 3:
+                        if lawn_avaible[lawn]:
+                            self.sunshine -= 50
+                            self.plant_cold[3] = 0
+                            self.active = 0
+                            plant_list.append(Nut(lawn_dict[lawn].x, lawn_dict[lawn].y))
+                            self.gen_plant=True
+                            lawn_avaible[lawn] = False
+                        else:
+                            self.active = 0
+                    if self.active == 4:
+                        if lawn_avaible[lawn]:
+                            self.sunshine -= 50
+                            self.plant_cold[4] = 0
+                            self.active = 0
+                            plant_list.append(Melon(lawn_dict[lawn].x, lawn_dict[lawn].y))
+                            self.gen_plant=True
+                            lawn_avaible[lawn] = False
+                        else:
+                            self.active = 0
+            if not self.gen_plant and self.active!=0 and not pygame.Rect(200, 0, 1000, 100).collidepoint(mouse_pos):
+                self.active = 0
+        if self.reasontime%10!=0:
+            self.reasontime+=1    
 
 
 card_box = Card()
@@ -562,6 +602,7 @@ class Melon:
                         self.countfunc = 0
                         for zombiee in self.emglist:
                             zombiee.style=9
+                            emg.zombie_list.remove(zombiee)
                         plant_list.remove(self)
                         for lawn in lawn_dict.keys():
                             if lawn_dict[lawn].x == self.x and lawn_dict[lawn].y == self.y:
@@ -723,23 +764,8 @@ class Level(Listener):
             )
         if self.level >= 6:
             self.post(Event(Event_kind.GAMEOVER))
-class Money:
-    def __init__(self):
-        self.money = 0
-        self.image = moneyimage
 
-    def add_money(self, num):
-        self.money += num
-
-    def reduce_money(self, num):
-        self.money -= num
-
-    def draw(self):
-        screen.blit(self.image, (0, 650))
-        text1 = font.render(f"{self.money}", True, (127, 255, 127))
-        screen.blit(text1, (58, 665))
 the_level = Level()
-player_money = Money()
 lawn_avaible = {}
 card_box = Card()
 add_hp = Button(130, 0, 50, 50, "images/加号.png")
@@ -760,15 +786,6 @@ class Money:
         screen.blit(self.image, (0, 650))
         text1 = font.render(f"{self.money}", True, (127, 255, 127))
         screen.blit(text1, (58, 665))
-
-class yruiet:
-    pass
-
-
-
-
-
-
 
 class Rect1:
     def __init__(self, x, y, width, height):

@@ -43,10 +43,10 @@ button_5 = Button(730, 544, 78, 76, "images/button5.jpg")
 button_6 = Button(810, 585, 55, 60, "images/button6.jpg")
 button_7 = Button(877, 580, 60, 52, "images/button7.jpg")
 button_8 = Button(350, 400, 260, 50, "images/button8.png")
-button_9 = Button(300, 525, 390, 100, "images/button9.png")
+#button_9 = Button(300, 525, 390, 100, "images/button9.png")
 button_12 = Button(730, 0, 270, 60, "images/button12.png")
-button_13=Button(355,400,280,55,"images/button13.png")
-button_14=Button(355,450,280,50,"images/button14.png")
+#button_13=Button(355,400,280,55,"images/button13.png")
+#button_14=Button(355,450,280,50,"images/button14.png")
 restart = Button(340, 400, 270, 60, "images/restart.png")
 buttontalk_1 = Button(740, 470, 260, 50, "images/button8.png")
 buttontalk_2 = Button(470, 470, 260, 50, "images/button9.png")
@@ -107,6 +107,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
 
     def listen(self, event: Event):  # 场景所监听的事件
         super().listen(event)
+        self.Pause=pausemanager.pause
+        button_15.is_draw=False
         if event.code == Event_kind.REQUEST_MOVE:  # 监听玩家的移动请求事件
             can_move = 1  # 一开始默认可以移动
             if can_move:  # 如果可以移动的话就发送允许移动事件
@@ -227,6 +229,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
 
             if self.style == 5 and not self.Pause:  # 对话界面
                 screen.blit(self.image, self.rect)
+                button_15.draw()
                 if buttontalk_1.is_clicked():
                     talk1.update()
                     if self.inout == 0:
@@ -281,6 +284,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 player_money.draw()
                 add_hp.draw()
                 shovel.draw()
+                button_15.draw()
                 key_pressed = pygame.key.get_pressed()
                 if (shovel.is_clicked() or key_pressed[pygame.K_3]) and self.reasontime%10==0:
                     self.reasontime+=1
@@ -328,6 +332,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 player.draw(self.carema1, self.style)  # 描绘玩家图像
                 front_door1.draw(self.carema1)
                 player_money.draw()
+                button_15.draw()
                 goods_shanghai.draw(self.carema1)
                 if goods_shanghai.is_clicked():
                     if player_money.money >= 100:
@@ -426,26 +431,21 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
             button_9.draw()
             button_13.draw()
             button_14.draw()
-            if button_9.is_clicked() :
-                self.Pause=False
-                player.pause=False
-            if button_13.is_clicked():
-                self.Pause=False
-                self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background": 1}))
-                player.pause=False
-                emg.zombie_list.clear()
-                plant_list.clear()
-                card_box.sunshine = 50
-                self.player.place = 0 
-                for lawn in lawn_dict.keys():
-                    lawn_avaible[lawn] = True
-                
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_2] and self.reasonpause%2==0:
-            self.reasonpause+=1 
-            self.Pause=not self.Pause
-        if self.reasonpause%2!=0 and not keys[pygame.K_2]:
-            self.reasonpause+=1
+        if pausemanager.func==2:
+            self.post(Event(Event_kind.CHANGE_BAKEGROUND,{"background": 1}))
+            emg.zombie_list.clear()
+            plant_list.clear()
+            for bullet in bulletlist_right:
+                bulletlist_right.remove(bullet)
+            for bullet in bulletlist_left:
+                bulletlist_left.remove(bullet)
+            player.hp = player.besthp
+            the_level.win_count = 0
+            the_level.count=0
+            card_box.sunshine = 50
+            self.player.place = 0 
+            for lawn in lawn_dict.keys():
+                lawn_avaible[lawn] = True
         if event.code == Event_kind.CHANGE_BAKEGROUND:
             self.style = event.body["background"]
             self.image = picture_list[self.style]
@@ -537,4 +537,4 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
         if event.code == Event_kind.WORDS:
             self.text = event.body["text"]
             self.status1 = 100
-        #print('scenelike:',self.Pause)
+        pausemanager.detect()

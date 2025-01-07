@@ -51,8 +51,6 @@ def changecolor(image, R, G, B):
 
 def f(x):
     return 60 * (1 / (1 + 2.71828 ** (-x)) - 0.5)
-
-
 def g(y, a=1):
     if y <= 5:
         return -25 * math.sin(0.5 * y) - 25
@@ -60,6 +58,10 @@ def g(y, a=1):
         return a * y**2 + (35 / 2 - 14 * a) * y - 255 / 2 + 45 * a
     else:
         return g(9)
+def h(x,a=1):
+    return (a/5)*math.sqrt(10*x-x**2)
+
+
 
 class Event_kind:
     DRAW = 1
