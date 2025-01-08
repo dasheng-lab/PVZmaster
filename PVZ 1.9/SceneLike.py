@@ -8,62 +8,8 @@ from Creature import *
 from Talk import *
 from Battle import *
 from Music import *
-#from plants import *
-picture_list = []
-start_image = pygame.image.load("images/start.png")
-start_image = pygame.transform.scale(start_image, (1000, 700))
-picture_list.append(start_image)
-main_image = pygame.image.load("images/main.png")
-main_image = pygame.transform.scale(main_image, (1000, 700))
-picture_list.append(main_image)
-long_image = pygame.image.load("images/longbackground.png")
-long_image = pygame.transform.scale(long_image, (4000, 700))
-picture_list.append(long_image)
-gameover3_image = pygame.image.load("images/gameover3.png")
-gameover3_image = pygame.transform.scale(gameover3_image, (400, 320))
-picture_list.append(gameover3_image)
-dayfail = pygame.image.load("images/dayfail.png")
-dayfail = pygame.transform.scale(dayfail, (4000, 700))
-picture_list.append(dayfail)
-dayfail2 = pygame.image.load("images/dayfail2.png")
-dayfail2 = pygame.transform.scale(dayfail2, (4000, 700))
-picture_list.append(dayfail2)
-picture_list.append("0")
-house_image = pygame.image.load("images/daifuhouse.png")
-house_image = pygame.transform.scale(house_image, (2000, 1300))
-picture_list.append(house_image)
-menu=pygame.image.load("images/menu.png")
-menu=pygame.transform.scale(menu,(500,600))
+from Resources import *
 
-button_1 = Button(320, 580, 300, 100, "images/button1.png")
-button_2 = Button(570, 103, 320, 140, "images/button2.jpg")
-button_3 = Button(570, 245, 308, 140, "images/button3.jpg")
-button_4 = Button(38, 153, 255, 45, "images/button4.jpg")
-button_5 = Button(730, 544, 78, 76, "images/button5.jpg")
-button_6 = Button(810, 585, 55, 60, "images/button6.jpg")
-button_7 = Button(877, 580, 60, 52, "images/button7.jpg")
-button_8 = Button(350, 400, 260, 50, "images/button8.png")
-#button_9 = Button(300, 525, 390, 100, "images/button9.png")
-button_12 = Button(730, 0, 270, 60, "images/button12.png")
-#button_13=Button(355,400,280,55,"images/button13.png")
-#button_14=Button(355,450,280,50,"images/button14.png")
-restart = Button(340, 400, 270, 60, "images/restart.png")
-buttontalk_1 = Button(740, 470, 260, 50, "images/button8.png")
-buttontalk_2 = Button(470, 470, 260, 50, "images/button9.png")
-buttontalk_3 = Button(200, 470, 260, 50, "images/button10.png")
-button_11 = Button(730, 0, 270, 60, "images/button11.png")
-front_door = Button2(5, 340, 60, 170, "images/frontdoor.png")
-behind_door = Button2(-1178, 278, 81, 240, "images/behinddoor.png")
-audio_player = AudioPlayer()
-audio_player.load_sound("begin", "music/begin.mp3")
-audio_player.load_sound("begin2", "music/begin2.mp3")
-audio_player.load_sound("begin3", "music/begin3.mp3")
-front_door1 = Button2(950, 600, 50, 50, "images/箭头.png")
-behind_door1 = Button2(-1000, 600, 50, 50, "images/箭头 左.png")
-goods_shanghai = Button2(-100, 1200, 50, 50, "images/伤害.png")
-goods_gongsu = Button2(-500, 1200, 50, 50, "images/攻速.png")
-goods_shengming = Button2(-100, 980, 50, 50, "images/最大生命.png")
-goods_sudu = Button2(-500, 980, 50, 50, "images/速度.png")
 def mouse():
     cursor_image_path = "images/OIP-C (1).png"
     cursor_image = pygame.image.load(cursor_image_path).convert_alpha()
@@ -141,8 +87,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                                 "background": 2,
                                 "x": -2600,
                                 "y": 0,
-                                "play_x": 120,
-                                "play_y": 350,
+                                "play_x": 200,
+                                "play_y": 370,
                             },
                         )
                     )
@@ -207,17 +153,21 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     card_box.sunshine = 50
                 text3 = font.render(f"{the_level.level}", True, (0, 0, 0))
                 screen.blit(text3, (920, 15))
+                the_level.reset()
+                emg.zombie_list.clear()
             if not self.Pause and self.style == 3:  # 敬请期待
-                    screen.blit(self.image, self.rect)
-                    button_8.draw()
-                    if button_8.is_clicked():
-                        self.post(Event(Event_kind.CHANGE_BAKEGROUND, {"background": 1}))
+                screen.blit(self.image, self.rect)
+                button_8.draw()
+                if button_8.is_clicked():
+                    self.post(Event(Event_kind.CHANGE_BAKEGROUND, {"background": 1}))
+                pygame.display.update()
 
             if not self.Pause and self.style == 4:  # 失败
                 go2 = pygame.image.load("images/gameover2.png")
                 go2 = pygame.transform.scale(go2, (400, 320))
                 screen.blit(go2, (280, 170))
                 restart.draw()
+                button_15.draw()
                 if restart.is_clicked():
                     self.ji = 0
                     self.post(
@@ -315,10 +265,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 the_level.level_start()
             if self.style == 7 and not self.Pause:  # 房子内
                 self.inout = 1
-                screen.blit(
-                    self.image,
-                    (self.rect.x - self.carema1[0], self.rect.y - self.carema1[1]),
-                )
+                screen.blit(self.image,
+                    (self.rect.x - self.carema1[0], self.rect.y - self.carema1[1]))
                 for bullet in bulletlist_right:
                     bullet.draw(self.carema1)
                 for bullet in bulletlist_left:
@@ -336,29 +284,33 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 goods_shanghai.draw(self.carema1)
                 if goods_shanghai.is_clicked():
                     if player_money.money >= 100:
-                        player.beat += 10
+                        player.beat += 2.5
                         player_money.reduce_money(100)
                     else:
                         self.status = 100
                 goods_gongsu.draw(self.carema1)
                 if goods_gongsu.is_clicked():
                     if player_money.money >= 100:
-                        player.shoot_speed -= 5
+                        if player.shoot_speed > 30:
+                            player.shoot_speed -= 2
+                        else:
+                            player.shoot_speed /= 1.03
                         player_money.reduce_money(100)
                     else:
                         self.status = 100
                 goods_shengming.draw(self.carema1)
                 if goods_shengming.is_clicked():
                     if player_money.money >= 100:
-                        player.besthp += 50
-                        player.hp += 50
+                        player.besthp += 25
+                        player.hp += 25
                         player_money.reduce_money(100)
                     else:
                         self.status = 100
                 goods_sudu.draw(self.carema1)
                 if goods_sudu.is_clicked():
                     if player_money.money >= 100:
-                        player.speed += 1
+                        player.speed += 0.25
+                        player.speed = round(player.speed, 2)
                         player_money.reduce_money(100)
                     else:
                         self.status = 100
@@ -370,8 +322,8 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                                 "background": 2,
                                 "x": -2600,
                                 "y": 0,
-                                "play_x": 120,
-                                "play_y": 350,
+                                "play_x": 200,
+                                "play_y": 370,
                             },
                         )
                     )
@@ -384,7 +336,7 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 self.status -= 1
                 if self.status1 > 0:
                     textn = font.render(f"{self.text}", True, (127, 255, 127))
-                    screen.blit(textn, (200, 0))
+                    screen.blit(textn, (50, 0))
                 self.status1 -= 1
 
         if event.code == Event_kind.STEP and not self.Pause:
@@ -414,8 +366,6 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                     if zombie.style != 10 and not (zombie.style==7 and zombie.collide):
                         zombie.move()
                     zombie.is_fall()
-                    if zombie.style == 9:
-                        emg.zombie_list.remove(zombie)
                     if zombie.is_end():
                         global end_zombie
                         end_zombie = zombie
@@ -468,7 +418,19 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 for zx2 in emg.zombie_list:
                     zx2.style = 4
                     zx2.x += 2
+                for plant in plant_list:
+                    plant.x += 2
+                    plant.draw(self.carema,11)
+                for bullet in bulletlist_right:
+                    bullet.rect.x += 2
+                    bullet.draw(self.carema)
+                for bullet in bulletlist_left:
+                    bullet.rect.x += 2
+                    bullet.draw(self.carema)
+                player.rect.x += 2
                 emg.draw(self.carema)
+                player.draw(self.carema,11)
+
                 pygame.display.update()
                 pygame.time.delay(5)
             dayfail = pygame.image.load("images/dayfail.png")
@@ -477,8 +439,15 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
             end_zombie.x = 300
             for i in range(300):
                 screen.blit(dayfail, (-2400, 0))
-                end_zombie.move()
+                end_zombie.move(0.3-end_zombie.move_speed)
                 emg.draw(self.carema)
+                player.draw(self.carema,11)
+                for plant in plant_list:
+                    plant.draw(self.carema,11)
+                for bullet in bulletlist_right:
+                    bullet.draw(self.carema)
+                for bullet in bulletlist_left:
+                    bullet.draw(self.carema)
                 pygame.display.update()
             go = pygame.image.load("images/gameover.png")
             dayfail2 = pygame.image.load("images/dayfail2.png")
@@ -486,13 +455,20 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
             go2 = pygame.image.load("images/gameover2.png")
             go2 = pygame.transform.scale(go2, (400, 320))
             for zx3 in emg.zombie_list:
-                if zx3.style != 5:
+                if zx3.style != 5 and zx3.style!=9:
                     zx3.style = 6
             for i in range(1, 500, 10):
                 screen.blit(dayfail2, (-2400, 0))
                 for zx3 in emg.zombie_list:
                     if zx3.style == 6:
                         zx3.draw(self.carema)
+                player.draw(self.carema,12)
+                for plant in plant_list:
+                    plant.draw(self.carema,12)
+                for bullet in bulletlist_right:
+                    bullet.draw(self.carema,12)
+                for bullet in bulletlist_left:
+                    bullet.draw(self.carema,12)
                 goo = pygame.transform.scale(go, (i, i))
                 screen.blit(goo, (500 - 0.5 * i, 350 - 0.5 * i))
                 pygame.display.update()
@@ -503,6 +479,13 @@ class SceneLike(Listener):  # 场景的类，管理障碍物、角色、地图�
                 if zx3.style == 6:
                     zx3.draw(self.carema)
                     pygame.display.update()
+            player.draw(self.carema,12)
+            for plant in plant_list:
+                plant.draw(self.carema,12)
+            for bullet in bulletlist_right:
+                bullet.draw(self.carema,12)
+            for bullet in bulletlist_left:
+                bullet.draw(self.carema,12)
             screen.blit(go2, (280, 170))
             pygame.display.update()
             self.style = 4

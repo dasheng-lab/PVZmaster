@@ -6,19 +6,7 @@ import copy
 from Creature import *
 from Openai import *
 from Battle import *
-
-NPC_picture = {
-    "1": "images/player's wife/图层 1.png",
-    "0": "images/戴夫/图层-1.png",
-    "2": "images/戴夫/图层-1.png",
-    "3": "images/坚果/坚果图层-1.png",
-    "4": "images/窝瓜/图层-1.png",
-}
-
-pygame.font.init()
-font = pygame.font.Font(f"word/pop.ttf", 30)
-font1 = pygame.font.Font(f"word/pop.ttf", 15)
-
+from Resources import *
 
 class Talk_content:  # NPC对话
     def __init__(self, font=font):
@@ -91,17 +79,19 @@ class Talk_content:  # NPC对话
             self.gen_text(kind, talk_staus)
             help_count[kind] += 1
         if help_count[kind] >= len(Help_talk[f"{kind}"]):
-            if player_money.money >= require_list[kind]:
-                self.dialog_text = "帮助成功"
+            if player_money.money >= require_list[kind] and card_box.plant[kind] == False:
+                self.dialog_text = "帮助成功!你的卡槽里多了这个植物！"
                 card_box.plant[kind] = True
                 player_money.reduce_money(require_list[kind])
+            elif card_box.plant[kind] == True:
+                self.dialog_text = "你已经帮助过了，并且买下了这个植物"
             else:
                 self.dialog_text = f"你需要{require_list[kind]}块钱才能帮助"
 
 
 talk1 = Talk_content()
 count0 = 0
-talk_ai = Talk_content(font1)
+talk_ai = Talk_content(font3)
 
 
 class Text(EntityLike):  # 文本框输入
@@ -225,18 +215,16 @@ Help_talk = {
         "哪里贵了，这么多年都是这个价格",
         "这么多年积蓄涨没涨，找找自己的问题",
         "(需要支付100块钱)",
-        "(你获得了坚果卡,花了100块钱)",
     ],
     "4": [
         "小子，你还是太年轻了",
         "打僵尸这事不是儿戏",
         "可能会付出生命的",
         "如果你执意要去，我可以帮你，前提是你通过我的测验",
-        "(提示：打僵尸攒积500块钱)",
-        "(你获得了窝瓜卡，花了500块钱)",
+        "(提示：打僵尸攒积200块钱)",
     ],
 }
-require_list = [0, 0, 0, 100, 500]
+require_list = [0, 0, 0, 100, 200]
 
 help_count = [0, 0, 0, 0, 0]
 

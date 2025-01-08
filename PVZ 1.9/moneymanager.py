@@ -1,13 +1,9 @@
 import pygame
-from ppause import *
-pygame.init()
-font = pygame.font.Font(f"word/pop.ttf", 30)
-font1 = pygame.font.Font(f"word/pop.ttf", 20)
-moneyimage = pygame.image.load("images/钱数.png")
-moneyimage = pygame.transform.scale(moneyimage, (150, 50))
+from pautton import *
+from Resources import *
 class Money:
     def __init__(self):
-        self.money = 0
+        self.money = 10000
         self.image = moneyimage
 
     def add_money(self, num):

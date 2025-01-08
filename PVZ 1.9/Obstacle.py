@@ -4,11 +4,7 @@ import sys
 import time
 import copy
 from Event import *
-
-screen_width = 1000
-screen_height = 700
-screen = pygame.display.set_mode((screen_width, screen_height))
-
+from Resources import *
 
 class Obstacle(EntityLike, pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):

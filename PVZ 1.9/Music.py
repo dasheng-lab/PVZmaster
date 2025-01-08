@@ -2,7 +2,6 @@ import pygame
 from Event import *
 from Creature import *
 
-
 class AudioPlayer:
     def __init__(self):
         pygame.init()
@@ -47,3 +46,8 @@ class AudioPlayer:
         # 停止正在播放的音频并播放新的音频
         self.stop_sound()
         self.play_sound(sound_name)
+
+audio_player = AudioPlayer()
+audio_player.load_sound("begin", "music/begin.mp3")
+audio_player.load_sound("begin2", "music/begin2.mp3")
+audio_player.load_sound("begin3", "music/begin3.mp3")
