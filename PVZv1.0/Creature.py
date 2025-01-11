@@ -520,8 +520,7 @@ class ZombieManager(pygame.sprite.Sprite):
         self.zombie_list.append(Paper_Zombie(x, gen))
 
     def AIput(self, playerx, playery, force, subforce=1):
-        # staystr = AI_decision(playerx, playery)
-        staystr = "666"
+        staystr = AI_decision(playerx, playery)
         if force == 1:  # 普通僵尸
             if subforce == 1:
                 if "425" in staystr:
